@@ -12,6 +12,8 @@ export default function CommandePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCartDialogOpen, setIsCartDialogOpen] = useState(false);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<{ [key: string]: boolean }>({});
   const [selectedOptionsDetails, setSelectedOptionsDetails] = useState<{ [key: string]: (OptionSupplement | OptionExtra | Accompagnements | Boissons) | undefined }>({});
   // États pour gérer la sélection unique des accompagnements et boissons
@@ -24,6 +26,31 @@ export default function CommandePage() {
   });
   const categoriesRef = useRef<HTMLDivElement>(null);
   const { cartItems, addToCart, updateQuantity, clearCart, calculateTotal } = useCart();
+
+  // Fonction pour gérer la diminution de quantité avec confirmation
+  const handleDecreaseQuantity = (itemId: string, currentQuantity: number) => {
+    if (currentQuantity === 1) {
+      setItemToDelete(itemId);
+      setIsDeleteDialogOpen(true);
+    } else {
+      updateQuantity(itemId, currentQuantity - 1);
+    }
+  };
+
+  // Fonction pour confirmer la suppression
+  const confirmDelete = () => {
+    if (itemToDelete) {
+      updateQuantity(itemToDelete, 0);
+      setItemToDelete(null);
+      setIsDeleteDialogOpen(false);
+    }
+  };
+
+  // Fonction pour annuler la suppression
+  const cancelDelete = () => {
+    setItemToDelete(null);
+    setIsDeleteDialogOpen(false);
+  };
 
   // Fonction pour vérifier si une catégorie a des options
   const getCategorySteps = (categoryId: string) => {
@@ -293,7 +320,7 @@ export default function CommandePage() {
       </header>
 
              {/* Contenu principal */}
-       <main className="pt-24 md:pt-16 pb-20">
+       <main className="pt-2 md:pt-16 pb-20">
         {categories.map((category) => (
           <section key={category.id} id={category.id} className="py-8 md:py-12">
             <div className="max-w-7xl mx-auto px-4">
@@ -421,34 +448,43 @@ export default function CommandePage() {
                 {/* Menu scrollable avec options - affiché seulement si la catégorie a des steps */}
                 {getCategorySteps(selectedProduct.category) && (
                   <div className="bg-gray-100 rounded-lg p-4 mb-6 max-h-100 overflow-y-auto scrollbar-hide">
-                    
-                                         {/* Suppléments gratuits */}
-                     {getCategorySteps(selectedProduct.category)?.supplements && (
-                       <div className="mb-6 bg-white border-gray-200 py-1 px-2">
-                         <h2 className="font-semibold text-xl text-gray-800 mb-4">
-                           {getCategorySteps(selectedProduct.category)?.supplements.title || "Salades"}
-                         </h2>
-                         <ul className="space-y-1">
-                           {getCategorySteps(selectedProduct.category)?.supplements.data.map((item) => (
-                             <li key={item.id} className="mb-2 border-b border-gray-100 flex justify-between items-center pb-2">
-                               <div className="text-gray-700 text-md">{item.name}</div>
-                               <button
-                                 onClick={() => toggleOption(item.id, { ...item, price: 0 })}
-                                 className={`w-4 h-4 border-2 border-gray-700 rounded flex items-center justify-center transition-colors ${
-                                   selectedOptions[item.id] ? 'bg-gray-800' : 'bg-white'
-                                 }`}
-                               >
-                                 {selectedOptions[item.id] && (
-                                   <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                   </svg>
-                                 )}
-                               </button>
-                             </li>
-                           ))}
-                         </ul>
-                       </div>
-                     )}
+
+                        {/* Suppléments gratuits */}
+                      {(() => {
+                       const supplements = getCategorySteps(selectedProduct.category)?.supplements;
+                       if (!supplements) return null;
+                       
+                       return (
+                         <div className="mb-6 bg-white border-gray-200 py-1 px-2">
+                           <h2 className="font-semibold text-xl text-gray-800 mb-4">
+                             {supplements.title || "Salades"}
+                           </h2>
+                           {supplements.data && supplements.data.length > 0 ? (
+                             <ul className="space-y-1">
+                               {supplements.data.map((item) => (
+                               <li key={item.id} className="mb-2 border-b border-gray-100 flex justify-between items-center pb-2">
+                                 <div className="text-gray-700 text-md">{item.name}</div>
+                                 <button
+                                   onClick={() => toggleOption(item.id, { ...item, price: 0 })}
+                                   className={`w-4 h-4 border-2 border-gray-700 rounded flex items-center justify-center transition-colors ${
+                                     selectedOptions[item.id] ? 'bg-gray-800' : 'bg-white'
+                                   }`}
+                                 >
+                                   {selectedOptions[item.id] && (
+                                     <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                     </svg>
+                                   )}
+                                 </button>
+                               </li>
+                             ))}
+                           </ul>
+                                                    ) : (
+                             <p className="text-gray-500 text-center py-4">Aucun suppléments</p>
+                           )}
+                         </div>
+                       );
+                     })()}
 
                                          {/* Suppléments payants */}
                      {getCategorySteps(selectedProduct.category)?.extra && (
@@ -597,16 +633,16 @@ export default function CommandePage() {
             </div>
 
             {/* Contenu */}
-            <div className="flex-1 p-6 overflow-y-auto">
+            <div className="flex-1 py-6 overflow-y-auto relative">
               {cartItems.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <p className="text-lg">Votre panier est vide</p>
                   <p className="text-sm mt-2">Ajoutez des produits pour commencer</p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-4 pb-20">
                   {cartItems.map((item) => (
-                    <div key={item.id} className="p-4 border rounded-lg">
+                    <div key={item.id} className="px-1 border rounded-lg">
                      
                       {/* Desktop layout */}
                       <div className="hidden md:flex items-center space-x-4">
@@ -626,27 +662,27 @@ export default function CommandePage() {
                           {item.selectedOptions && item.selectedOptions.length > 0 && (
                             <ul className="text-xs text-gray-600 mt-1">
                               {item.selectedOptions.map((option: OptionSupplement | OptionExtra | Accompagnements | Boissons, index: number) => (
-                                <li key={index} className="flex justify-between">
-                                  <span>{option.name}</span>
-                                  {option.price > 0 && <span>+{option.price}€</span>}
+                                <li key={index} className="flex justify-start">
+                                  <span className="text-gray-600 pr-3">{option.name}</span>
+                                  {option.price > 0 && <span className="text-gray-600 font-semibold">+{option.price}€</span>}
                                 </li>
                               ))}
                             </ul>
                           )}
-                          <p className="text-lg font-bold text-red-600">{item.totalPrice ? `${item.totalPrice.toFixed(2)}€` : item.price}</p>
+                          <p className="text-lg font-bold text-gray-600">{item.totalPrice ? `${item.totalPrice.toFixed(2)}€` : item.price}</p>
                         </div>
                         
                         <div className="flex items-center space-x-3">
                           <button
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="w-8 h-8 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center text-lg font-bold transition-colors"
+                            onClick={() => handleDecreaseQuantity(item.id, item.quantity)}
+                            className="w-8 h-8 bg-white hover:bg-gray-100 hover:text-white text-gray-600  border border-gray-600 rounded-full flex items-center justify-center text-lg font-bold transition-colors"
                           >
                             -
                           </button>
-                          <span className="text-lg font-medium min-w-[2rem] text-center">{item.quantity}</span>
+                          <span className="text-lg font-bold min-w-[2rem] text-center bg-white px-3 py-1 rounded text-gray-600">{item.quantity}</span>
                           <button
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="w-8 h-8 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center text-lg font-bold transition-colors"
+                            className="w-8 h-8 bg-white hover:bg-gray-100 hover:text-white text-gray-600  border border-gray-600 rounded-full flex items-center justify-center text-lg font-bold transition-colors"
                           >
                             +
                           </button>
@@ -654,8 +690,9 @@ export default function CommandePage() {
                       </div>
 
                       {/* Mobile layout */}
-                      <div className="md:hidden ">
-                        <div className="flex items-center space-x-4 mb-3">
+                      <div className="md:hidden border-b border-gray-200 pb-4">
+                        <div className="flex items-start space-x-4">
+                          {/* Image à gauche */}
                           <div className="flex-shrink-0">
                             <Image 
                               src={item.image} 
@@ -666,68 +703,61 @@ export default function CommandePage() {
                             />
                           </div>
                           
+                          {/* Contenu à droite */}
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-medium text-gray-900 truncate">{item.name}</h3>
-                            <p className="text-sm text-gray-500 line-clamp-2">{item.description}</p>
+                            {/* Nom de l'article */}
+                            <h3 className="font-medium text-gray-900 text-lg mb-2">{item.name}</h3>
+                            
+                            {/* Liste des options sélectionnées */}
                             {item.selectedOptions && item.selectedOptions.length > 0 && (
-                              <ul className="text-xs text-gray-600 mt-1">
+                              <div className="space-y-1 pl-4 mb-2">
                                 {item.selectedOptions.map((option: OptionSupplement | OptionExtra | Accompagnements | Boissons, index: number) => (
-                                  <li key={index} className="flex justify-between">
-                                    <span>{option.name}</span>
-                                    {option.price > 0 && <span>+{option.price}€</span>}
-                                  </li>
+                                  <div key={index} className="flex-1">
+                                    <li className="text-sm text-gray-600 pr-3">{option.name} +{option.price}€</li>
+                                  </div>
                                 ))}
-                              </ul>
+                              </div>
                             )}
                           </div>
-                          
-                          <div className="flex items-center space-x-3">
-                            <button
-                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                              className="w-8 h-8 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center text-lg font-bold transition-colors"
-                            >
-                              -
-                            </button>
-                            <span className="text-lg font-medium min-w-[2rem] text-center">{item.quantity}</span>
-                            <button
-                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                              className="w-8 h-8 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center text-lg font-bold transition-colors"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-                        
-                        {/* Prix sous l'image sur mobile */}
-                        <div className="flex items-center justify-between">
-                          <p className="text-lg font-bold text-red-600">{item.totalPrice ? `${item.totalPrice.toFixed(2)}€` : item.price}</p>
                         </div>
                       </div>
                     </div>
                   ))}
+                  
+                  {/* Bouton fixe "Ajouter des articles" sur mobile */}
+                  <div className="md:hidden left-4 right-4 z-40 flex justify-end pr-3">
+                    <button
+                      onClick={() => setIsCartDialogOpen(false)}
+                      className=" w-[60%] bg-white text-gray-600 py-3 px-6 rounded-full font-semibold border-1 border-gray-600 transition-all focus:duration-200 shadow-lg"
+                    >
+                      + Ajouter des articles
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Footer */}
+                        {/* Footer */}
             <div className="p-6 border-t border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-lg font-medium text-gray-900">Total</span>
-                <span className="text-2xl font-bold text-red-600">{calculateTotal().toFixed(2)}€</span>
-              </div>
-              
-                              <div className="flex space-x-3">
+              <div className="flex justify-end">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg font-medium text-gray-900">Total</span>
+                    <span className="text-2xl font-bold text-red-600">{calculateTotal().toFixed(2)}€</span>
+                  </div>
+                  
                   <button
                     onClick={() => {
                       setIsCartDialogOpen(false);
                       setIsConfirmationOpen(true);
                     }}
-                    className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-3 px-6 rounded-lg font-semibold transition-colors"
+                    className="w-65 bg-yellow-400 focus:bg-yellow-500 text-gray-600 border border-gray-600 rounded-lg py-3 px-6 font-semibold transition-colors hover:bg-gray-50"
                     disabled={cartItems.length === 0}
                   >
                     Confirmer la commande
                   </button>
                 </div>
+              </div>
             </div>
           </div>
         </div>
@@ -795,15 +825,48 @@ export default function CommandePage() {
             </div>
 
             {/* Footer avec bouton Retour */}
-            <div className="p-6 border-t border-gray-200">
+            <div className="p-6 border-t border-gray-200 flex justify-end">
+                              <button
+                  onClick={() => {
+                    setIsConfirmationOpen(false);
+                    setIsCartDialogOpen(true);
+                  }}
+                  className="w-65 bg-yellow-400 focus:bg-yellow-500 text-gray-600 border border-gray-600 rounded-lg py-3 px-6 font-semibold transition-colors hover:bg-gray-50"
+                >
+                  Retour
+                </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dialog de confirmation de suppression */}
+      {isDeleteDialogOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-md w-full mx-4">
+            {/* Header */}
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Confirmation de suppression</h3>
+            </div>
+            
+            {/* Body */}
+            <div className="p-6">
+              <p className="text-gray-600">Êtes-vous sûr de vouloir supprimer ce produit ?</p>
+            </div>
+            
+            {/* Footer */}
+            <div className="p-6 border-t border-gray-200 flex justify-between">
               <button
-                onClick={() => {
-                  setIsConfirmationOpen(false);
-                  setIsCartDialogOpen(true);
-                }}
-                className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 px-6 rounded-lg font-medium transition-colors"
+                onClick={cancelDelete}
+                className="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
               >
-                Retour
+                Annuler
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 text-white bg-gray-600 hover:bg-gray-600 rounded-lg font-medium transition-colors"
+              >
+                Supprimer
               </button>
             </div>
           </div>
