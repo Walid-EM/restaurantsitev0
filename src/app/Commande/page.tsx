@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { products, categories, supplements, extra, accompagnements, boissons } from "../data";
+import { products, categories } from "../data";
 import { Product, OptionSupplement, OptionExtra, Accompagnements, Boissons } from "../types";
 import { useCart } from "../CartProvider";
 
@@ -25,7 +25,7 @@ export default function CommandePage() {
     boissons: null
   });
   const categoriesRef = useRef<HTMLDivElement>(null);
-  const { cartItems, addToCart, updateQuantity, clearCart, calculateTotal } = useCart();
+  const { cartItems, addToCart, updateQuantity, calculateTotal } = useCart();
 
   // Fonction pour gérer la diminution de quantité avec confirmation
   const handleDecreaseQuantity = (itemId: string, currentQuantity: number) => {

@@ -6,8 +6,8 @@ import { useState, useEffect } from "react";
 
 export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMobileSubmenuOpen, setIsMobileSubmenuOpen] = useState(false);
-  const [currentSlide, setCurrentSlide] = useState(0);
+
+
   const [activePage, setActivePage] = useState('home');
 
   const toggleMobileMenu = () => {
@@ -15,98 +15,27 @@ export default function Home() {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  const toggleMobileSubmenu = () => {
-    console.log('Toggle mobile submenu clicked, current state:', isMobileSubmenuOpen);
-    const newState = !isMobileSubmenuOpen;
-    setIsMobileSubmenuOpen(newState);
-    console.log('New state will be:', newState);
-  };
 
 
 
-  const sliderImages = [
-    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23ff6b6b'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-family='Arial' font-size='24'%3EBurger Classic%3C/text%3E%3C/svg%3E",
-    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23ff6b6b'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-family='Arial' font-size='24'%3EBurger Deluxe%3C/text%3E%3C/svg%3E",
-    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23ff6b6b'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-family='Arial' font-size='24'%3EBurger Premium%3C/text%3E%3C/svg%3E",
-    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23ff6b6b'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-family='Arial' font-size='24'%3EBurger Special%3C/text%3E%3C/svg%3E",
-    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23ff6b6b'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-family='Arial' font-size='24'%3EBurger Gourmet%3C/text%3E%3C/svg%3E",
-    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23ff6b6b'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-family='Arial' font-size='24'%3EBurger Royal%3C/text%3E%3C/svg%3E",
-    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23ff6b6b'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-family='Arial' font-size='24'%3EBurger Supreme%3C/text%3E%3C/svg%3E"
-  ];
-
-  const nextSlide = () => {
-    setCurrentSlide((prev) => Math.min(prev + 1, sliderImages.length - 3));
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) => Math.max(prev - 1, 0));
-  };
-
-  const nextSlideMobile = () => {
-    setCurrentSlide((prev) => (prev + 1) % sliderImages.length);
-  };
-
-  const prevSlideMobile = () => {
-    setCurrentSlide((prev) => (prev - 1 + sliderImages.length) % sliderImages.length);
-  };
 
 
 
-  // Interactions clavier pour PC
+
+
+  // Gestion du clavier pour fermer le menu mobile
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (window.innerWidth >= 1500) {
-        // Desktop controls
-        switch(e.key) {
-          case 'ArrowLeft':
-            e.preventDefault();
-            prevSlide();
-            break;
-          case 'ArrowRight':
-            e.preventDefault();
-            nextSlide();
-            break;
-          case 'Escape':
-            setIsMobileMenuOpen(false);
-            break;
-        }
-      } else {
-        // Mobile controls
-        switch(e.key) {
-          case 'ArrowLeft':
-            e.preventDefault();
-            prevSlideMobile();
-            break;
-          case 'ArrowRight':
-            e.preventDefault();
-            nextSlideMobile();
-            break;
-          case 'Escape':
-            setIsMobileMenuOpen(false);
-            break;
-        }
+      if (e.key === 'Escape') {
+        setIsMobileMenuOpen(false);
       }
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [nextSlide, nextSlideMobile, prevSlide, prevSlideMobile]);
+  }, []);
 
-  // Auto-play pour mobile (optionnel)
-  useEffect(() => {
-    if (window.innerWidth < 1500) {
-      const interval = setInterval(() => {
-        nextSlideMobile();
-      }, 5000); // Change d'image toutes les 5 secondes
 
-      return () => clearInterval(interval);
-    }
-  }, [nextSlideMobile]);
-
-  // Debug: Surveiller les changements d'état du sous-menu mobile
-  useEffect(() => {
-    console.log('isMobileSubmenuOpen changed to:', isMobileSubmenuOpen);
-  }, [isMobileSubmenuOpen]);
 
 
 
@@ -382,7 +311,7 @@ export default function Home() {
             <div className="text-center h-[95%] w-full md:w-[60%] p-8 bg-black/95 rounded-lg shadow-2xl flex flex-col">
               <h2 className="text-4xl font-bold text-white mb-8">Nous Rejoindre</h2>
               <p className="text-lg text-white max-w-2xl mx-auto mt-[30vh]">
-                Rejoignez notre équipe et participez à l'aventure Delice Wand.
+                Rejoignez notre équipe et participez à l&apos;aventure Delice Wand.
               </p>
             </div>
           </div>
