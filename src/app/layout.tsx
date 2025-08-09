@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Dancing_Script } from "next/font/google";
+import { Geist, Geist_Mono, Dancing_Script, Sora } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "./CartProvider";
 
@@ -17,6 +17,12 @@ const dancingScript = Dancing_Script({
   variable: "--font-handwriting",
   subsets: ["latin"],
   weight: ["400", "700"],
+});
+
+const sora = Sora({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -56,7 +62,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${dancingScript.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${dancingScript.variable} ${sora.variable} antialiased`}
       >
         <CartProvider>
           {children}
