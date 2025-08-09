@@ -751,7 +751,7 @@ export default function CommandePage() {
                       setIsCartDialogOpen(false);
                       setIsConfirmationOpen(true);
                     }}
-                    className="w-65 bg-yellow-400 focus:bg-yellow-500 text-gray-600 border border-gray-600 rounded-lg py-3 px-6 font-semibold transition-colors hover:bg-gray-50"
+                    className="w-65 bg-yellow-400 focus:bg-yellow-500 text-gray-600 border border-gray-300 rounded-lg py-3 px-6 font-semibold transition-colors hover:bg-gray-50"
                     disabled={cartItems.length === 0}
                   >
                     Confirmer la commande
@@ -831,7 +831,7 @@ export default function CommandePage() {
                     setIsConfirmationOpen(false);
                     setIsCartDialogOpen(true);
                   }}
-                  className="w-65 bg-yellow-400 focus:bg-yellow-500 text-gray-600 border border-gray-600 rounded-lg py-3 px-6 font-semibold transition-colors hover:bg-gray-50"
+                  className="w-65 bg-yellow-400 focus:bg-yellow-500 text-gray-600 border border-gray-300 rounded-lg py-3 px-6 font-semibold transition-colors hover:bg-gray-50"
                 >
                   Retour
                 </button>
