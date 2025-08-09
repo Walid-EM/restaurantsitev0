@@ -55,7 +55,7 @@ const IMAGES = {
 export const supplements: OptionSupplement[] = [
   { id: "supp1", name: "Oignons", image: IMAGES.SUPPLEMENTS.OIGNONS, price: 0.0 },
   { id: "supp2", name: "Tomates", image: IMAGES.SUPPLEMENTS.TOMATES, price: 0.0 },
-  { id: "supp3", name: "Carrottes", image: IMAGES.SUPPLEMENTS.CAROTTES, price: 0.0 },
+  { id: "supp3", name: "Carottes", image: IMAGES.SUPPLEMENTS.CAROTTES, price: 0.0 },
   { id: "supp4", name: "Salade", image: IMAGES.SUPPLEMENTS.SALADE, price: 0.0 },
   { id: "supp5", name: "Mais", image: IMAGES.SUPPLEMENTS.MAIS, price: 0.0 }
 ];
