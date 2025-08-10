@@ -203,6 +203,11 @@ const BOISSONS: Product[] = [
 // EXPORTS PRINCIPAUX
 // ============================================================================
 
+// Fonction utilitaire pour récupérer les étapes d'une catégorie
+export const getCategorySteps = (categoryId: string) => {
+  return CATEGORY_STEPS[categoryId] || null;
+};
+
 // Tous les produits
 export const products: Product[] = [
   ...ASSIETTES,

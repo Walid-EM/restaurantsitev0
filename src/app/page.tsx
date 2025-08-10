@@ -35,7 +35,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header avec navigation */}
-      <header className="bg-black/90 backdrop-blur-lg border-b border-gray-600/50 text-white fixed top-0 left-0 right-0 z-50 shadow-2xl">
+      <header className="bg-black/60 backdrop-blur-sm border-b border-gray-600/50 text-white fixed top-0 left-0 right-0 z-50 shadow-2xl">
         <div className="flex items-center h-20 w-full px-6">
 
             {/* Menu hamburger - Mobile seulement, tout à gauche */}
@@ -50,7 +50,7 @@ export default function Home() {
             </button>
 
             {/* Logo + Titre (centré sur mobile, à gauche sur desktop) */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 xl:static xl:left-auto xl:transform-none xl:flex-shrink-0">
+            <div className="flex-shrink-0">
               <button 
                 onClick={() => setActivePage('home')}
                 className="flex items-center space-x-3 focus:outline-none hover:scale-105 transition-all duration-200 group"
@@ -199,8 +199,23 @@ export default function Home() {
 
       {/* Arrière-plan fixe sur tout l'écran */}
       <div className="fixed inset-0 w-full h-full">
+
+        {/* Image d'arrière-plan principale */}
+        <div className="absolute inset-0 z-10 overflow-hidden">
+          <div 
+            className="absolute w-full h-full"
+            style={{
+              backgroundImage: 'url(/bgmainpage.jpg)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'right center',
+              backgroundRepeat: 'no-repeat',
+              width: '100vw',
+              height: '100vh',
+            }}
+          />
+        </div>
         {/* Vidéo en arrière-plan (z-index le plus bas) */}
-        <video
+        {/* <video
           autoPlay
           loop
           muted
@@ -212,7 +227,7 @@ export default function Home() {
         </video> 
         
          {/* Image d'arrière-plan principale */}
-        {/* <div className="absolute inset-0 z-10 overflow-hidden">
+        { <div className="absolute inset-0 z-10 overflow-hidden">
           <div 
             className="absolute w-full h-full"
             style={{
@@ -220,15 +235,16 @@ export default function Home() {
               backgroundSize: 'auto',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
-              transform: 'scale(1.5) scaleX(-3) translateY(-200px) translateX(40px)',
+              transform: 'scale(1.3) scaleX(-3) translateY(-200px) translateX(40px)',
               transformOrigin: 'center center',
               width: '100vw',
               height: '100vh',
               minWidth: '1920px',
-              minHeight: '1080px'
+              minHeight: '1080px',
+              opacity: 0.7,
             }}
           />
-        </div> */} 
+        </div> } 
         
         {/* Overlay sombre pour améliorer la lisibilité */}
         <div className={`absolute inset-0 bg-black/50 bg-opacity-40 z-20 transition-all duration-300 ${
@@ -243,47 +259,78 @@ export default function Home() {
         {activePage === 'home' && (
           <div className="flex-1 flex flex-col items-center justify-start w-full">
             {/* Hero Section */}
-            <div className="text-center text-white px-4 sm:px-6 pt-16 sm:pt-20 pb-12 sm:pb-16 w-full max-w-6xl mx-auto">
-              <h1 className="text-4xl sm:text-5xl md:text-7xl xl:text-8xl font-bold mb-6 sm:mb-8 drop-shadow-2xl animate-in slide-in-from-bottom duration-700">
-                Delice Wand
-              </h1>
-              <p className="text-xl sm:text-2xl xl:text-3xl drop-shadow-lg mb-8 max-w-4xl mx-auto leading-relaxed">
-                Une expérience culinaire unique qui réveille vos papilles
-              </p>
-              <p className="text-base sm:text-lg drop-shadow-lg max-w-3xl mx-auto leading-relaxed text-gray-200">
-                Découvrez nos burgers artisanaux, nos accompagnements frais et nos saveurs authentiques. 
-                Le meilleur du snack à portée de clic !
-              </p>
-              
-              {/* Boutons d'action */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
-                <Link href="/Commande">
-                  <button className="group bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 hover:from-yellow-500 hover:via-orange-500 hover:to-red-500 text-black font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/50 focus:outline-none text-lg overflow-hidden tracking-wide shadow-lg"
-                    style={{ fontFamily: "'Inter', 'Segoe UI', 'Roboto', sans-serif" }}
-                  >
-                    <span className="relative z-10 flex items-center space-x-3">
-                      <span className="font-semibold">COMMANDER MAINTENANT</span>
-                      <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                      </svg>
-                    </span>
+            <div className="w-full max-w-6xl px-4 sm:px-6 pt-16 sm:pt-20 pb-12 sm:pb-16 mx-auto">
+              {/* Conteneur principal avec fond semi-transparent */}
+              <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-md rounded-3xl p-8 sm:p-12 border border-gray-600/50 shadow-2xl shadow-black/50 relative overflow-hidden group">
+                {/* Éléments décoratifs en arrière-plan */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-400/20 to-orange-500/20 rounded-full blur-3xl group-hover:scale-150 transition-all duration-700"></div>
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-br from-red-500/20 to-pink-500/20 rounded-full blur-2xl group-hover:scale-125 transition-all duration-700"></div>
+                
+                {/* Ligne décorative en haut */}
+                <div className="w-[95%] h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto mb-8 animate-pulse"></div>
+                
+                {/* Contenu principal */}
+                <div className="text-center text-white relative z-10">
+                  {/* Titre principal avec effet de gradient */}
+                  <h1 className="text-4xl sm:text-5xl md:text-7xl xl:text-8xl font-bold mb-6 sm:mb-8 drop-shadow-2xl animate-in slide-in-from-bottom duration-700 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
+                    Delice Wand
+                  </h1>
+                  
+                  {/* Sous-titre avec style amélioré */}
+                  <p className="text-xl sm:text-2xl xl:text-3xl font-semibold mb-8 max-w-4xl mx-auto leading-relaxed text-white drop-shadow-lg animate-in slide-in-from-bottom duration-700 delay-200">
+                    Une expérience culinaire unique qui réveille vos papilles
+                  </p>
+                  
+                  {/* Description avec style cohérent */}
+                  <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 mb-12 max-w-3xl mx-auto animate-in slide-in-from-bottom duration-700 delay-300">
+                    <p className="text-base sm:text-lg leading-relaxed text-gray-200">
+                      Découvrez nos burgers artisanaux, nos accompagnements frais et nos saveurs authentiques. 
+                      Le meilleur du snack à portée de clic !
+                    </p>
+                  </div>
+                  
+                  {/* Boutons d'action avec style amélioré */}
+                  <div className="flex flex-col sm:flex-row gap-6 justify-center animate-in slide-in-from-bottom duration-700 delay-400">
+                    <Link href="/Commande">
+                      <button className="group bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 hover:from-yellow-500 hover:via-orange-500 hover:to-red-500 text-black font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/50 focus:outline-none text-lg overflow-hidden tracking-wide shadow-lg relative"
+                        style={{ fontFamily: "'Inter', 'Segoe UI', 'Roboto', sans-serif" }}
+                      >
+                        <span className="relative z-10 flex items-center space-x-3">
+                          <span className="font-semibold">COMMANDER MAINTENANT</span>
+                          <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                          </svg>
+                        </span>
+                        <div className="absolute inset-0 bg-white/20 translate-x-full group-hover:translate-x-0 transition-transform duration-500 skew-x-12"></div>
+                      </button>
+                    </Link>
+                    
+                    <button 
+                      onClick={() => setActivePage('carte')}
+                      className="group bg-transparent border-2 border-white/30 text-white font-bold py-4 px-8 rounded-2xl focus:outline-none text-lg backdrop-blur-sm hover:border-yellow-400/50 hover:bg-yellow-400/10 transition-all duration-300 hover:scale-105"
+                    >
+                      <span className="flex items-center space-x-3">
+                        <span>VOIR LA CARTE</span>
+                        <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </span>
                     </button>
-                </Link>
-                <button 
-                  onClick={() => setActivePage('carte')}
-                  className="bg-transparent border-2 border-white/30 text-white font-bold py-4 px-8 rounded-2xl focus:outline-none text-lg backdrop-blur-sm"
-                >
-                  <span className="flex items-center space-x-3">
-                    <span>VOIR LA CARTE</span>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </span>
-                </button>
+                  </div>
+                </div>
+                
+                {/* Ligne décorative en bas */}
+                <div className="w-[95%] h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto mt-8 animate-pulse"></div>
               </div>
             </div>
 
             {/* Section Statistiques */}
+            <div className="w-full max-w-6xl px-4 mb-16">
+              <div className="text-center mb-12">
+                <h2 className="text-4xl font-bold text-white mb-4 drop-shadow-lg">Notre Service</h2>
+                <div className="w-[30%] h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto"></div>
+              </div>
+            </div>
             <div className="w-full max-w-6xl px-4 mb-16">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300 group">
@@ -322,7 +369,7 @@ export default function Home() {
             <div className="w-full max-w-6xl px-4 mb-16">
               <div className="text-center mb-12">
                 <h2 className="text-4xl font-bold text-white mb-4 drop-shadow-lg">Nos Spécialités</h2>
-                <div className="w-24 h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto"></div>
+                <div className="w-[30%] h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto"></div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -363,25 +410,33 @@ export default function Home() {
         {activePage === 'restaurant' && (
           <div className="flex-1 flex items-center justify-center pt-8">
             <div className="text-center h-[95%] w-full md:w-[80%] p-8 bg-gradient-to-br from-gray-800/95 to-gray-900/95 rounded-2xl shadow-2xl border border-gray-600/50 backdrop-blur-md flex flex-col overflow-y-auto">
-              <h2 className="text-4xl font-bold text-white mb-8 bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">Notre Restaurant</h2>
+              <div className="mb-8">
+                <h2 className="text-4xl font-bold text-white mb-3 bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent text-center">Notre Restaurant</h2>
+                <div className="h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto" style={{ width: '300px' }}></div>
+              </div>
               
               {/* Section Histoire */}
               <div className="mb-8 text-left">
-                <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
-                  <span className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mr-3 text-black text-sm font-bold">1</span>
-                  Notre Histoire
-                </h3>
+                <div className="inline-block bg-gradient-to-br from-gray-700/60 to-gray-800/60 rounded-lg p-4 border border-gray-600/30 shadow-md mb-4">
+                  <h3 className="text-2xl font-bold text-white mb-0 flex items-center">
+                    <span className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mr-3 text-black text-sm font-bold">1</span>
+                    Notre Histoire
+                  </h3>
+                </div>
                 <p className="text-lg text-gray-200 leading-relaxed mb-4">
-                  Histoire du Snack
+                  Lorem, ipsum dolor sit amet consectetur adipisicing elit. Veritatis beatae nemo impedit. Distinctio officiis earum minus, non maiores tenetur sunt. Provident nam maiores ratione dolores, omnis laboriosam praesentium possimus inventore!
                 </p>
+                <div className="w-full md:w-[30%] h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto mt-5 mb-8"></div>
               </div>
 
               {/* Section Valeurs */}
               <div className="mb-8 text-left">
-                <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
-                  <span className="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center mr-3 text-black text-sm font-bold">2</span>
-                  Nos Valeurs
-                </h3>
+                <div className="inline-block bg-gradient-to-br from-gray-700/60 to-gray-800/60 rounded-lg p-4 border border-gray-600/30 shadow-md mb-4">
+                  <h3 className="text-2xl font-bold text-white mb-0 flex items-center">
+                    <span className="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center mr-3 text-black text-sm font-bold">2</span>
+                    Nos Valeurs
+                  </h3>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="bg-white/10 rounded-xl p-4 border border-white/20">
                     <h4 className="text-lg font-semibold text-white mb-2">Qualité</h4>
@@ -400,14 +455,18 @@ export default function Home() {
                     <p className="text-gray-300">Recettes créatives et techniques modernes</p>
                   </div>
                 </div>
+                <div className="md:w-[30%] w-full h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto mt-5 mb-8"></div>
               </div>
+              
 
               {/* Section Équipe */}
               <div className="text-left">
-                <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
-                  <span className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center mr-3 text-black text-sm font-bold">3</span>
-                  Notre Équipe
-                </h3>
+                <div className="inline-block bg-gradient-to-br from-gray-700/60 to-gray-800/60 rounded-lg p-4 border border-gray-600/30 shadow-md mb-4">
+                  <h3 className="text-2xl font-bold text-white mb-0 flex items-center">
+                    <span className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center mr-3 text-black text-sm font-bold">3</span>
+                    Notre Équipe
+                  </h3>
+                </div>
                 <p className="text-lg text-gray-200 leading-relaxed mb-4">
                   Notre équipe passionnée travaille chaque jour pour vous offrir une meilleure expérience 
                   culinaire avec des produits frais et de qualité.
@@ -417,6 +476,7 @@ export default function Home() {
                     Rejoindre l&apos;équipe
                   </button>
                 </div>
+                <div className="w-full md:w-[30%] h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto mt-5 mb-8"></div>
               </div>
             </div>
           </div>
@@ -425,13 +485,16 @@ export default function Home() {
         {activePage === 'carte' && (
           <div className="flex-1 flex items-center justify-center pt-8">
             <div className="text-center h-[95%] w-full md:w-[80%] p-8 bg-gradient-to-br from-gray-800/95 to-gray-900/95 rounded-2xl shadow-2xl border border-gray-600/50 backdrop-blur-md flex flex-col overflow-y-auto">
-              <h2 className="text-4xl font-bold text-white mb-8 bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">LA CARTE</h2>
+              <h2 className="text-4xl font-bold text-white mb-3 bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">LA CARTE</h2>
+              <div className="h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto" style={{ width: '300px' }}></div>
               
               {/* Section Catégories */}
               <div className="mb-8 text-left">
-                <h3 className="text-2xl font-bold text-white mb-6 flex items-center">
-                  Nos Catégories
-                </h3>
+                <div className="inline-block bg-gradient-to-br from-gray-700/60 to-gray-800/60 rounded-lg p-4 border border-gray-600/30 shadow-md mb-6">
+                  <h3 className="text-2xl font-bold text-white mb-0 flex items-center">
+                    Nos Catégories
+                  </h3>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="group bg-gradient-to-br from-gray-700/80 to-gray-800/80 rounded-xl p-6 border border-gray-600/50 hover:border-yellow-400/50 transition-all duration-300 hover:scale-105">
                     <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
@@ -469,6 +532,7 @@ export default function Home() {
                     <div className="text-yellow-400 font-semibold">À partir de 3€</div>
                   </div>
                 </div>
+                <div className="w-full md:w-[30%] h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto mt-5 mb-8"></div>
               </div>
 
               {/* Call to Action */}
@@ -483,6 +547,7 @@ export default function Home() {
                     <span className="font-semibold">VOIR LE MENU COMPLET</span>
                   </button>
                 </Link>
+                <div className="w-full md:w-[30%] h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto mt-5 mb-8"></div>
               </div>
             </div>
           </div>
@@ -491,14 +556,17 @@ export default function Home() {
         {activePage === 'localisation' && (
           <div className="flex-1 flex items-center justify-center pt-8">
             <div className="text-center h-[95%] w-full md:w-[80%] p-8 bg-gradient-to-br from-gray-800/95 to-gray-900/95 rounded-2xl shadow-2xl border border-gray-600/50 backdrop-blur-md flex flex-col overflow-y-auto">
-              <h2 className="text-4xl font-bold text-white mb-8 bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">OÙ NOUS TROUVER ?</h2>
-              
+              <h2 className="text-4xl font-bold text-white mb-3 bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">OÙ NOUS TROUVER ?</h2>
+              <div className="h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto" style={{ width: '300px' }}></div>
+
               {/* Section Adresse */}
               <div className="mb-8 text-left">
-                <h3 className="text-2xl font-bold text-white mb-6 flex items-center">
-                  <span className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mr-3 text-black text-sm font-bold">📍</span>
-                  Notre Adresse
-                </h3>
+                <div className="inline-block bg-gradient-to-br from-gray-700/60 to-gray-800/60 rounded-lg p-4 border border-gray-600/30 shadow-md mb-6">
+                  <h3 className="text-2xl font-bold text-white mb-0 flex items-center">
+                    <span className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mr-3 text-black text-sm font-bold">📍</span>
+                    Notre Adresse
+                  </h3>
+                </div>
                 <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl p-6 border border-blue-400/30">
                   <div className="flex items-center mb-4">
                     <span className="text-3xl mr-3">🏢</span>
@@ -513,14 +581,17 @@ export default function Home() {
                     <p className="text-lg">Belgique</p>
                   </div>
                 </div>
+                <div className="w-full md:w-[30%] h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto mt-5 mb-8"></div>
               </div>
 
               {/* Section Horaires */}
               <div className="mb-8 text-left">
-                <h3 className="text-2xl font-bold text-white mb-6 flex items-center">
-                  <span className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center mr-3 text-black text-sm font-bold">🕒</span>
-                  Horaires d&apos;Ouverture
-                </h3>
+                <div className="inline-block bg-gradient-to-br from-gray-700/60 to-gray-800/60 rounded-lg p-4 border border-gray-600/30 shadow-md mb-6">
+                  <h3 className="text-2xl font-bold text-white mb-0 flex items-center">
+                    <span className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center mr-3 text-black text-sm font-bold">🕒</span>
+                    Horaires d&apos;Ouverture
+                  </h3>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="bg-white/10 rounded-xl p-6 border border-white/20">
                     <h4 className="text-lg font-semibold text-white mb-4">Lundi - Vendredi</h4>
@@ -537,14 +608,17 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
+                <div className="w-full md:w-[30%] h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto mt-5 mb-8"></div>
               </div>
 
               {/* Section Contact */}
               <div className="mb-8 text-left">
-                <h3 className="text-2xl font-bold text-white mb-6 flex items-center">
-                  <span className="w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mr-3 text-black text-sm font-bold">📞</span>
-                  Nous Contacter
-                </h3>
+                <div className="inline-block bg-gradient-to-br from-gray-700/60 to-gray-800/60 rounded-lg p-4 border border-gray-600/30 shadow-md mb-6">
+                  <h3 className="text-2xl font-bold text-white mb-0 flex items-center">
+                    <span className="w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mr-3 text-black text-sm font-bold">📞</span>
+                    Nous Contacter
+                  </h3>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="bg-gradient-to-r from-yellow-400/20 to-orange-500/20 rounded-xl p-6 border border-yellow-400/30">
                     <div className="flex items-center mb-4">
@@ -568,6 +642,7 @@ export default function Home() {
                     <p className="text-lg font-semibold text-green-400">contact@delicewand.be</p>
                   </div>
                 </div>
+                <div className="w-full md:w-[30%] h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto mt-5 mb-8"></div>
               </div>
               
               {/* Google Map */}
@@ -582,6 +657,7 @@ export default function Home() {
                   referrerPolicy="no-referrer-when-downgrade"
                   className="rounded-xl"
                 />
+                <div className="w-full md:w-[30%] h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto mt-5 mb-8"></div>
               </div>
               
               {/* Call to Action */}
@@ -601,6 +677,7 @@ export default function Home() {
                     <span>RÉSERVER UNE TABLE</span>
                   </button>
                 </div>
+                <div className="w-full md:w-[30%] h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto mt-5 mb-8"></div>
               </div>
             </div>
           </div>
@@ -610,13 +687,16 @@ export default function Home() {
           <div className="flex-1 flex items-center justify-center pt-8">
             <div className="text-center h-[95%] w-full md:w-[80%] p-8 bg-gradient-to-br from-gray-800/95 to-gray-900/95 rounded-2xl shadow-2xl border border-gray-600/50 backdrop-blur-md flex flex-col overflow-y-auto">
               <h2 className="text-4xl font-bold text-white mb-8 bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">Rejoindre la Communauté</h2>
+              <div className="h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto" style={{ width: '300px' }}></div>
               
               {/* Section Introduction */}
               <div className="mb-8 text-left">
-                <h3 className="text-2xl font-bold text-white mb-6 flex items-center">
-                  <span className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center mr-3 text-black text-sm font-bold">🌟</span>
-                  Rejoignez Notre Communauté
-                </h3>
+                <div className="inline-block bg-gradient-to-br from-gray-700/60 to-gray-800/60 rounded-lg p-4 border border-gray-600/30 shadow-md mb-6">
+                  <h3 className="text-2xl font-bold text-white mb-0 flex items-center">
+                    <span className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center mr-3 text-black text-sm font-bold">🌟</span>
+                    Rejoignez Notre Communauté
+                  </h3>
+                </div>
                 <p className="text-lg text-gray-200 leading-relaxed mb-6">
                   Restez connecté avec Delice Wand et découvrez en avant-première nos nouvelles créations, 
                   nos offres spéciales et les coulisses de notre restaurant ! Rejoignez notre communauté 
@@ -631,14 +711,17 @@ export default function Home() {
                     <li className="flex items-center"><span className="text-green-400 mr-2">✓</span> Photos et vidéos des coulisses</li>
                   </ul>
                 </div>
+                <div className="w-full md:w-[30%] h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto mt-5 mb-8"></div>
               </div>
 
               {/* Section Réseaux Sociaux */}
               <div className="mb-8 text-left">
-                <h3 className="text-2xl font-bold text-white mb-6 flex items-center">
-                  <span className="w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mr-3 text-black text-sm font-bold">📱</span>
-                  Nos Réseaux Sociaux
-                </h3>
+                <div className="inline-block bg-gradient-to-br from-gray-700/60 to-gray-800/60 rounded-lg p-4 border border-gray-600/30 shadow-md mb-6">
+                  <h3 className="text-2xl font-bold text-white mb-0 flex items-center">
+                    <span className="w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mr-3 text-black text-sm font-bold">📱</span>
+                    Nos Réseaux Sociaux
+                  </h3>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="group bg-gradient-to-br from-gray-700/80 to-gray-800/80 rounded-xl p-6 border border-gray-600/50 hover:border-blue-400/50 transition-all duration-300 hover:scale-105">
                     <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
@@ -680,7 +763,7 @@ export default function Home() {
                   <div className="group bg-gradient-to-br from-gray-700/80 to-gray-800/80 rounded-xl p-6 border border-gray-600/50 hover:border-green-400/50 transition-all duration-300 hover:scale-105">
                     <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
                       <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.374l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
                       </svg>
                     </div>
                     <h4 className="text-xl font-bold text-white mb-3">WhatsApp</h4>
@@ -688,14 +771,17 @@ export default function Home() {
                     <div className="text-green-400 font-semibold">+32 468 12 76</div>
                   </div>
                 </div>
+                <div className="w-full md:w-[30%] h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto mt-5 mb-8"></div>
               </div>
 
               {/* Section Événements */}
               <div className="mb-8 text-left">
-                <h3 className="text-2xl font-bold text-white mb-6 flex items-center">
-                  <span className="w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mr-3 text-black text-sm font-bold">🎉</span>
-                  Événements & Anniversaires
-                </h3>
+                <div className="inline-block bg-gradient-to-br from-gray-700/60 to-gray-800/60 rounded-lg p-4 border border-gray-600/30 shadow-md mb-6">
+                  <h3 className="text-2xl font-bold text-white mb-0 flex items-center">
+                    <span className="w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mr-3 text-black text-sm font-bold">🎉</span>
+                    Événements & Anniversaires
+                  </h3>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="bg-white/10 rounded-xl p-6 border border-white/20">
                     <h4 className="text-lg font-semibold text-white mb-3">🍔 Anniversaires gourmands</h4>
@@ -708,6 +794,7 @@ export default function Home() {
                     <p className="text-yellow-400 text-sm">Contactez-nous pour plus d&apos;informations</p>
                   </div>
                 </div>
+                <div className="w-full md:w-[30%] h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto mt-5 mb-8"></div>
               </div>
 
               {/* Call to Action */}
@@ -723,6 +810,7 @@ export default function Home() {
                     <span>VOIR TOUS NOS RÉSEAUX</span>
                   </button>
                 </div>
+                <div className="w-full md:w-[30%] h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto mt-5 mb-8"></div>
               </div>
             </div>
           </div>

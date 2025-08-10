@@ -251,16 +251,13 @@ export default function CommandePage() {
       setLastScrollY(currentScrollY);
       setIsScrolling(true);
 
-      // Gestion de la visibilité du header mobile - visible seulement près du sommet
-      if (currentScrollY <= 20) {
-        // Très proche du sommet - header visible
+      // Gestion de la visibilité du header principal - visible SEULEMENT quand on est tout en haut
+      if (currentScrollY <= 10) {
+        // Très proche du sommet (≤ 10px) - header principal visible
         setIsHeaderVisible(true);
-      } else if (currentScrollY > lastScrollY) {
-        // Scroll vers le bas - masquer le header
+      } else {
+        // Dès qu'on scrolle un peu - masquer le header principal
         setIsHeaderVisible(false);
-      } else if (currentScrollY < lastScrollY && currentScrollY <= 80) {
-        // Scroll vers le haut ET proche du sommet - afficher le header
-        setIsHeaderVisible(true);
       }
 
       // Scroll horizontal automatique des catégories - plus rapide
@@ -285,277 +282,298 @@ export default function CommandePage() {
 
   return (
     <div className="min-h-screen text-white">
-      {/* Header avec navigation - Visible sur mobile avec logique de scroll */}
-              <header className={`${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'} md:translate-y-0 ${isScrolling ? 'transition-none' : 'transition-all duration-500 ease-out'} bg-black/90 backdrop-blur-lg border-b border-gray-600/50 text-white fixed top-0 left-0 right-0 z-50 shadow-2xl`}>
-        <div className="flex items-center h-20 w-full px-6 relative">
-
-            {/* Logo + Titre (centré sur mobile, à gauche sur desktop) */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 xl:static xl:left-auto xl:transform-none xl:flex-shrink-0">
-              <Link href="/">
-                <button className="flex items-center space-x-3 focus:outline-none hover:scale-105 transition-all duration-200 group">
-                  <div className="relative">
-                    <Image
-                      src="/cheeseburger.png"
-                      alt="Cheeseburger Logo"
-                      width={40}
-                      height={40}
-                      className="w-10 h-10"
-                    />
-                    <div className="absolute inset-0 bg-yellow-400/20 rounded-full blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-                  </div>
-                  <h1 className="text-xl xl:text-3xl font-bold text-white hover:text-yellow-400 transition-colors duration-300">
-                    Delice Wand
-                  </h1>
-                </button>
-              </Link>
-            </div>
-
-            {/* Navigation + Bouton Commander à droite */}
-            <div className="flex items-center space-x-6 xl:ml-auto">
-              {/* Menu de navigation - Desktop */}
-              <nav className="hidden xl:flex items-center space-x-2">
-                {categories.map((category) => (
-                  <button
-                    key={category.id}
-                    onClick={() => scrollToSection(category.id)}
-                    className={`whitespace-nowrap px-4 py-3 text-sm font-medium transition-all duration-300 relative rounded-xl hover:bg-white/5 ${
-                      activeCategory === category.id
-                        ? "text-white bg-white/10"
-                        : "text-gray-300 hover:text-white"
-                    }`}
-                  >
-                    <span className="relative z-10">{category.name}</span>
-                    {activeCategory === category.id && (
-                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-in slide-in-from-left duration-300" />
-                    )}
-                  </button>
-                ))}
-              </nav>
-
-              {/* Bouton Commander - Desktop seulement */}
-              <button 
-                onClick={() => setIsCartDialogOpen(true)}
-                className="hidden md:block relative group bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 hover:from-yellow-500 hover:via-orange-500 hover:to-red-500 text-black font-bold py-3 xl:py-4 px-6 xl:px-10 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/50 focus:outline-none text-sm xl:text-base overflow-hidden tracking-wide"
-                style={{ fontFamily: "'Inter', 'Segoe UI', 'Roboto', sans-serif" }}
-                disabled={cartItems.length === 0}
-              >
-                <span className="relative z-10 flex items-center">
-                  <span className="font-semibold">COMMANDER</span>
-                  {cartItems.length > 0 && (
-                    <span className="flex absolute -top-3 -right-8 text-black text-sm font-bold rounded-full h-6 w-6 items-center justify-center animate-pulse">
-                      {cartItems.length}
-                    </span>
-                  )}
-                </span>
-                <div className="absolute inset-0 bg-white/20 translate-x-full group-hover:translate-x-0 transition-transform duration-500 skew-x-12"></div>
-              </button>
-            </div>
-          </div>
-      </header>
-
-      {/* Header mobile avec catégories - S'adapte à la visibilité du header principal */}
-      <header className={`md:hidden sticky ${isHeaderVisible ? 'top-20' : 'top-0'} bg-black/95 backdrop-blur-sm z-50 border-b border-gray-700 shadow-lg ${isScrolling ? 'transition-none' : 'transition-all duration-500 ease-out'}`}>
-        <div className="px-4 py-3">
+      {/* Arrière-plan fixe sur tout l'écran */}
+      <div className="fixed inset-0 w-full h-full">
+        {/* Image d'arrière-plan principale */}
+        <div className="absolute inset-0 z-20 overflow-hidden">
           <div 
-            ref={categoriesRef}
-            className="flex space-x-4 overflow-x-auto scrollbar-hide"
-            style={{ 
-              scrollbarWidth: 'none', 
-              msOverflowStyle: 'none'
+            className="absolute w-full h-full"
+            style={{
+              backgroundImage: 'url(/bgmainpage.jpg)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'right center',
+              backgroundRepeat: 'no-repeat',
+              width: '100vw',
+              height: '100vh',
             }}
-          >
-              {categories.map((category) => (
-               <button
-                 key={category.id}
-                 data-category={category.id}
-                 onClick={() => scrollToSection(category.id)}
-                 className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-150 whitespace-nowrap ${
-                   activeCategory === category.id
-                     ? "bg-gradient-to-r from-red-500 to-yellow-500 text-white shadow-lg"
-                     : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                 }`}
-               >
-                 {category.name}
-               </button>
-             ))}
-          </div>
+          />
         </div>
-      </header>
-
-             {/* Contenu principal modernisé */}
-       <main className={`${isHeaderVisible ? 'pt-32' : 'pt-20'} md:pt-20 pb-20 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 ${isScrolling ? 'transition-none' : 'transition-all duration-500 ease-out'}`}>
-        {categories.map((category) => (
-          <section key={category.id} id={category.id} className="py-8 md:py-12">
-            <div className="max-w-7xl mx-auto px-4">
-              {/* Header de catégorie modernisé */}
-              <div className="flex items-center justify-start mb-8 md:mb-10">
-                <div className="relative mr-4 md:mr-6">
-                  <Image
-                    src={category.image || "/Frites.png"}
-                    alt={category.name}
-                    width={60}
-                    height={60}
-                    className="w-12 h-12 md:w-16 md:h-16 drop-shadow-lg"
-                  />
-                  <div className="absolute inset-0 bg-yellow-400/20 rounded-full blur-lg opacity-60"></div>
-                </div>
-                <div>
-                  <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent mb-2">{category.name}</h2>
-                  <div className="w-20 h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full opacity-80"></div>
-                </div>
-              </div>
-              
-              {/* Grille de produits modernisée */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
-                {products
-                  .filter((product) => product.category === category.id)
-                  .map((product) => (
-                      <div
-                        key={product.id}
-                        tabIndex={0}
-                        onClick={() => openProductModal(product)}
-                        onFocus={(e) => {
-                          setTimeout(() => {
-                            e.target.blur();
-                          }, 100);
-                        }}
-                        className="group relative bg-gradient-to-br from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 rounded-2xl overflow-hidden transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/20 border border-gray-600 hover:border-yellow-400/50 cursor-pointer flex flex-row shadow-lg"
-                      >
-                        {/* Effet de fond animé */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        
-                        {/* Div gauche - Titre et prix modernisés */}
-                        <div className="p-4 md:p-6 flex-1 flex flex-col justify-center relative z-10">
-                          <h2 className="text-lg md:text-xl font-bold mb-2 text-white group-hover:text-yellow-400 transition-colors duration-300">{product.name}</h2>
-                          <span className="text-yellow-400 text-lg md:text-xl font-bold mb-3">{product.price}</span>
-                          <p className="text-gray-300 text-sm md:text-base mb-3 line-clamp-2 leading-relaxed">{product.description}</p>
-                          
-                          {/* Badge de popularité */}
-                          <div className="flex gap-2">
-                            <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-xs font-bold px-2 py-1 rounded-full opacity-80">
-                              Populaire
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Div droite - Image avec bouton modernisé */}
-                        <div className="relative w-40 h-40 flex-shrink-0 flex items-center justify-center">
-                          <Image
-                            src={product.image}
-                            alt={product.name}
-                            width={120}
-                            height={120}
-                            className="object-contain w-full h-full group-hover:scale-110 transition-transform duration-300 drop-shadow-lg"
-                          />
-                          
-                          {/* Bouton + modernisé */}
-                          <button 
-                            onFocus={(e) => {
-                              setTimeout(() => {
-                                e.target.blur();
-                              }, 100);
-                            }}
-                            className="absolute top-3 right-3 w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-full flex items-center justify-center transition-all duration-300 text-lg md:text-xl font-bold hover:scale-110 z-10 shadow-lg hover:shadow-red-500/50"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                  ))}
-              </div>
-            </div>
-          </section>
-        ))}
-      </main>
-
-      {/* Bouton Commander fixe - Mobile seulement */}
-      <div className="md:hidden fixed bottom-6 right-6 z-50">
-        <button 
-          onClick={() => setIsCartDialogOpen(true)}
-          className="relative group bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 hover:from-yellow-500 hover:via-orange-500 hover:to-red-500 text-black font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/50 focus:outline-none text-base overflow-hidden tracking-wide shadow-lg"
-          style={{ fontFamily: "'Inter', 'Segoe UI', 'Roboto', sans-serif" }}
-          disabled={cartItems.length === 0}
-        >
-          <span className="relative z-10 flex items-center">
-            <span className="font-semibold">COMMANDER</span>
-            {cartItems.length > 0 && (
-              <span className="absolute -top-3 -right-7 text-gray-900 text-sm font-bold rounded-full h-6 w-6 flex items-center justify-center ">
-                {cartItems.length}
-              </span>
-            )}
-          </span>
-          <div className="absolute inset-0 bg-white/20 translate-x-full group-hover:translate-x-0 transition-transform duration-500 skew-x-12"></div>
-        </button>
+        
+        {/* Overlay sombre pour améliorer la lisibilité */}
+    
       </div>
 
-      {/* Modal Produit */}
-      {isModalOpen && selectedProduct && (
-        <div 
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-0 md:p-4"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              closeProductModal();
-            }
-          }}
-        >
-          <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-none md:rounded-2xl w-full h-full md:w-3/4 md:h-1/1 max-w-4xl max-h-[100vh] flex flex-col overflow-hidden border border-gray-600 shadow-2xl">
-            {/* Contenu scrollable sur mobile */}
-            <div className="flex-1 overflow-y-auto overscroll-contain">
-              {/* Image du produit modernisée */}
-              <div className="relative w-full h-48 md:h-52 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center overflow-hidden">
-                <Image
-                  src={selectedProduct.image}
-                  alt={selectedProduct.name}
-                  fill
-                  className="object-contain transition-transform duration-300 hover:scale-105"
-                />
-                {/* Effet de fond lumineux */}
-                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/10 to-orange-500/10 opacity-60"></div>
-                
-                {/* Bouton fermer modernisé */}
-                <button
-                  onClick={closeProductModal}
-                  className="absolute top-4 left-4 w-10 h-10 bg-gray-900/80 hover:bg-gray-800 rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm transition-all duration-200 hover:scale-110 border border-gray-600"
-                >
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+      {/* Contenu principal qui prend tout l'écran */}
+      <div className={`relative z-30 min-h-screen overflow-y-auto flex flex-col md:pt-0 ${isHeaderVisible ? 'pt-15' : 'pt-0'}`}>
+                  {/* Header avec navigation - Visible sur mobile avec logique de scroll */}
+          <header className={`${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'} md:translate-y-0 transition-transform ease-out bg-black/60 backdrop-blur-sm border-b border-gray-600/50 text-white fixed top-0 left-0 right-0 z-50 shadow-2xl`}>
+          <div className="flex items-center h-20 w-full px-6 relative">
+
+              {/* Logo + Titre */}
+              <div className="flex-shrink-0">
+                <Link href="/">
+                  <button className="flex items-center space-x-3 focus:outline-none hover:scale-105 transition-all duration-200 group">
+                    <div className="relative">
+                      <Image
+                        src="/cheeseburger.png"
+                        alt="Cheeseburger Logo"
+                        width={40}
+                        height={40}
+                        className="w-10 h-10"
+                      />
+                      <div className="absolute inset-0 bg-yellow-400/20 rounded-full blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+                    </div>
+                    <h1 className="text-xl xl:text-3xl font-bold text-white hover:text-yellow-400 transition-colors duration-300">
+                      Delice Wand
+                    </h1>
+                  </button>
+                </Link>
               </div>
 
-              {/* Informations du produit modernisées */}
-              <div className="py-6 px-4">
-                <div className="mb-6">
-                  <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent mb-3">
-                    {selectedProduct.name}
-                  </h1>
-                  <div className="w-24 h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full opacity-80 mb-4"></div>
+              {/* Navigation + Bouton Commander à droite */}
+              <div className="flex items-center space-x-6 xl:ml-auto">
+                {/* Menu de navigation - Desktop */}
+                <nav className="hidden xl:flex items-center space-x-2">
+                  {categories.map((category) => (
+                    <button
+                      key={category.id}
+                      onClick={() => scrollToSection(category.id)}
+                      className={`whitespace-nowrap px-4 py-3 text-sm font-medium transition-all duration-300 relative rounded-xl hover:bg-white/5 ${
+                        activeCategory === category.id
+                          ? "text-white bg-white/10"
+                          : "text-gray-300 hover:text-white"
+                      }`}
+                    >
+                      <span className="relative z-10">{category.name}</span>
+                      {activeCategory === category.id && (
+                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-in slide-in-from-left duration-300" />
+                      )}
+                    </button>
+                  ))}
+                </nav>
+
+                {/* Bouton Commander - Desktop seulement */}
+                <button 
+                  onClick={() => setIsCartDialogOpen(true)}
+                  className="hidden md:block relative group bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 hover:from-yellow-500 hover:via-orange-500 hover:to-red-500 text-black font-bold py-3 xl:py-4 px-6 xl:px-10 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/50 focus:outline-none text-sm xl:text-base overflow-hidden tracking-wide"
+                  style={{ fontFamily: "'Inter', 'Segoe UI', 'Roboto', sans-serif" }}
+                  disabled={cartItems.length === 0}
+                >
+                  <span className="relative z-10 flex items-center">
+                    <span className="font-semibold">COMMANDER</span>
+                    {cartItems.length > 0 && (
+                      <span className="flex absolute -top-3 -right-8 text-black text-sm font-bold rounded-full h-6 w-6 items-center justify-center animate-pulse">
+                        {cartItems.length}
+                      </span>
+                    )}
+                  </span>
+                  <div className="absolute inset-0 bg-white/20 translate-x-full group-hover:translate-x-0 transition-transform duration-500 skew-x-12"></div>
+                </button>
+              </div>
+            </div>
+        </header>
+
+        {/* Header mobile avec catégories - Se place en dessous du header principal quand il est visible */}
+        <header className={`md:hidden fixed left-0 right-0 bg-black/95 backdrop-blur-sm z-50 border-b border-gray-700 shadow-lg transition-transform duration-300 ease-out`} style={{ transform: `translateY(${isHeaderVisible ? '10px' : '0px'})` }}>
+          <div className="px-4 py-3">
+            <div 
+              ref={categoriesRef}
+              className="flex space-x-4 overflow-x-auto scrollbar-hide"
+              style={{ 
+                scrollbarWidth: 'none', 
+                msOverflowStyle: 'none'
+              }}
+            >
+                {categories.map((category) => (
+                 <button
+                   key={category.id}
+                   data-category={category.id}
+                   onClick={() => scrollToSection(category.id)}
+                   className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-150 whitespace-nowrap ${
+                     activeCategory === category.id
+                       ? "bg-gradient-to-r from-red-500 to-yellow-500 text-white shadow-lg"
+                       : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                   }`}
+                 >
+                   {category.name}
+                 </button>
+               ))}
+            </div>
+          </div>
+        </header>
+
+               {/* Contenu principal modernisé */}
+         <main className={`${isHeaderVisible ? 'pt-32' : 'pt-20'} md:pt-20 pb-20 bg-gradient-to-br from-gray-900/80 via-gray-800/80 to-gray-900/80 backdrop-blur-sm ${isScrolling ? 'transition-none' : 'transition-all duration-500 ease-out'} relative z-20`}>
+          
+          {categories.map((category) => (
+            <section key={category.id} id={category.id} className="py-8 md:py-12">
+              <div className="max-w-7xl mx-auto px-4">
+                {/* Header de catégorie modernisé */}
+                <div className="flex items-center justify-start mb-8 md:mb-10">
+                  <div className="relative mr-4 md:mr-6">
+                    <Image
+                      src={category.image || "/Frites.png"}
+                      alt={category.name}
+                      width={60}
+                      height={60}
+                      className="w-12 h-12 md:w-16 md:h-16 drop-shadow-lg"
+                    />
+                    <div className="absolute inset-0 bg-yellow-400/20 rounded-full blur-lg opacity-60"></div>
+                  </div>
+                  <div>
+                    <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent mb-2">{category.name}</h2>
+                    <div className="w-20 h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full opacity-80"></div>
+                  </div>
                 </div>
                 
-                <div className="bg-gray-700/50 rounded-xl p-4 mb-6 border border-gray-600">
-                  <p className="text-2xl md:text-3xl font-bold text-yellow-400 mb-2">
-                    {selectedProduct.price}
-                  </p>
-                  <p className="text-gray-300 text-base md:text-lg leading-relaxed">
-                    {selectedProduct.description}
-                  </p>
+                {/* Grille de produits modernisée */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
+                  {products
+                    .filter((product) => product.category === category.id)
+                    .map((product) => (
+                        <div
+                          key={product.id}
+                          tabIndex={0}
+                          onClick={() => openProductModal(product)}
+                          onFocus={(e) => {
+                            setTimeout(() => {
+                              e.target.blur();
+                            }, 100);
+                          }}
+                          className="group bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-md rounded-2xl p-6 border border-gray-600/50 hover:border-yellow-400/50 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/20 cursor-pointer flex flex-row shadow-lg"
+                        >
+                          {/* Div gauche - Titre et prix modernisés */}
+                          <div className="flex-1 flex flex-col justify-center relative z-10">
+                            <h2 className="text-xl font-bold text-white mb-3 group-hover:text-yellow-400 transition-colors duration-300">{product.name}</h2>
+                            <span className="text-yellow-400 text-xl font-bold mb-3">{product.price}</span>
+                            <p className="text-gray-300 leading-relaxed mb-3">{product.description}</p>
+                            
+                            {/* Badge de popularité */}
+                            <div className="flex gap-2">
+                              <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-xs font-bold px-2 py-1 rounded-full opacity-80">
+                                Populaire
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Div droite - Image avec bouton modernisé */}
+                          <div className="relative w-40 h-40 flex-shrink-0 flex items-center justify-center">
+                            <Image
+                              src={product.image}
+                              alt={product.name}
+                              width={120}
+                              height={120}
+                              className="object-contain w-full h-full group-hover:scale-110 transition-transform duration-300 drop-shadow-lg"
+                            />
+                            
+                            {/* Bouton + modernisé */}
+                            <button 
+                              onFocus={(e) => {
+                                setTimeout(() => {
+                                  e.target.blur();
+                                }, 100);
+                              }}
+                              className="absolute top-3 right-3 w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-full flex items-center justify-center transition-all duration-300 text-xl font-bold hover:scale-110 z-10 shadow-lg hover:shadow-red-500/50"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                    ))}
+                </div>
+              </div>
+            </section>
+          ))}
+        </main>
+
+        {/* Bouton Commander fixe - Mobile seulement */}
+        <div className="md:hidden fixed bottom-6 right-6 z-50">
+          <button 
+            onClick={() => setIsCartDialogOpen(true)}
+            className="relative group bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 hover:from-yellow-500 hover:via-orange-500 hover:to-red-500 text-black font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/50 focus:outline-none text-base overflow-hidden tracking-wide shadow-lg"
+            style={{ fontFamily: "'Inter', 'Segoe UI', 'Roboto', sans-serif" }}
+            disabled={cartItems.length === 0}
+          >
+            <span className="relative z-10 flex items-center">
+              <span className="font-semibold">COMMANDER</span>
+              {cartItems.length > 0 && (
+                <span className="absolute -top-3 -right-7 text-gray-900 text-sm font-bold rounded-full h-6 w-6 flex items-center justify-center ">
+                  {cartItems.length}
+                </span>
+              )}
+            </span>
+            <div className="absolute inset-0 bg-white/20 translate-x-full group-hover:translate-x-0 transition-transform duration-500 skew-x-12"></div>
+          </button>
+        </div>
+
+        {/* Modal Produit */}
+        {isModalOpen && selectedProduct && (
+          <div 
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-0 md:p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                closeProductModal();
+              }
+            }}
+          >
+            <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-none md:rounded-2xl w-full h-full md:w-3/4 md:h-1/1 max-w-4xl max-h-[100vh] flex flex-col overflow-hidden border border-gray-600 shadow-2xl">
+              {/* Contenu scrollable sur mobile */}
+              <div className="flex-1 overflow-y-auto overscroll-contain">
+                {/* Image du produit modernisée */}
+                <div className="relative w-full h-48 md:h-52 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center overflow-hidden">
+                  <Image
+                    src={selectedProduct.image}
+                    alt={selectedProduct.name}
+                    fill
+                    className="object-contain transition-transform duration-300 hover:scale-105"
+                  />
+                  {/* Effet de fond lumineux */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/10 to-orange-500/10 opacity-60"></div>
+                  
+                  {/* Bouton fermer modernisé */}
+                  <button
+                    onClick={closeProductModal}
+                    className="absolute top-4 left-4 w-10 h-10 bg-gray-900/80 hover:bg-gray-800 rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm transition-all duration-200 hover:scale-110 border border-gray-600"
+                  >
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
                 </div>
 
-                {/* Badges populaires modernisés */}
-                <div className="flex gap-3 px-4 mb-8">
-                  <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-                    ⭐ Le plus aimé
+                {/* Informations du produit modernisées */}
+                <div className="py-6 px-4">
+                  <div className="mb-6">
+                    <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent mb-3">
+                      {selectedProduct.name}
+                    </h1>
+                    <div className="w-24 h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full opacity-80 mb-4"></div>
                   </div>
-                  <div className="bg-gradient-to-r from-blue-400 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-                    🔥 Populaire
+                  
+                  <div className="bg-gray-700/50 rounded-xl p-4 mb-6 border border-gray-600">
+                    <p className="text-2xl md:text-3xl font-bold text-yellow-400 mb-2">
+                      {selectedProduct.price}
+                    </p>
+                    <p className="text-gray-300 text-base md:text-lg leading-relaxed">
+                      {selectedProduct.description}
+                    </p>
                   </div>
-                </div>
 
-                {/* Menu avec options modernisé - affiché seulement si la catégorie a des steps */}
-                {getCategorySteps(selectedProduct.category) && (
-                  <div className="bg-gradient-to-br from-gray-800 to-gray-900 mb-6 pt-6 rounded-t-2xl">
+                  {/* Badges populaires modernisés */}
+                  <div className="flex gap-3 px-4 mb-8">
+                    <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+                      ⭐ Le plus aimé
+                    </div>
+                    <div className="bg-gradient-to-r from-blue-400 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+                      🔥 Populaire
+                    </div>
+                  </div>
 
-                        {/* Suppléments gratuits*/}
+                  {/* Menu avec options modernisé - affiché seulement si la catégorie a des steps */}
+                  {getCategorySteps(selectedProduct.category) && (
+                    <div className="bg-gradient-to-br from-gray-800 to-gray-900 mb-6 pt-6 rounded-t-2xl">
+
+                          {/* Suppléments gratuits*/}
                       {(() => {
                        const supplements = getCategorySteps(selectedProduct.category)?.supplements;
                        if (!supplements) return null;
@@ -1150,7 +1168,6 @@ export default function CommandePage() {
           </div>
         </div>
       )}
-
       {/* Dialog de confirmation de suppression */}
       {isDeleteDialogOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -1183,6 +1200,7 @@ export default function CommandePage() {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }
