@@ -1,12 +1,13 @@
 "use client";
 import { useState } from 'react';
 import Image from 'next/image';
+import { CartItem } from '../types';
 
 interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
   total: number;
-  cartItems: any[];
+  cartItems: CartItem[];
   onPaymentSuccess: () => void;
 }
 
@@ -14,7 +15,7 @@ type PaymentMethod = 'creditcard' | 'paypal' | 'applepay' | 'googlepay' | 'banco
 
 type Step = 'payment-method' | 'personal-info' | 'summary';
 
-export default function PaymentModal({ isOpen, onClose, total, cartItems, onPaymentSuccess }: PaymentModalProps) {
+export default function PaymentModal({ isOpen, onClose, total, cartItems }: PaymentModalProps) {
   const [currentStep, setCurrentStep] = useState<Step>('payment-method');
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
@@ -49,11 +50,6 @@ export default function PaymentModal({ isOpen, onClose, total, cartItems, onPaym
     } else {
       setCurrentStep('personal-info');
     }
-  };
-
-  const goToStep = (step: Step) => {
-    setCurrentStep(step);
-    setPaymentError(null);
   };
 
   const goBack = () => {
@@ -329,7 +325,7 @@ export default function PaymentModal({ isOpen, onClose, total, cartItems, onPaym
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Date d'expiration *
+                  Date d&apos;expiration *
                 </label>
                 <input
                   type="text"
@@ -411,7 +407,7 @@ export default function PaymentModal({ isOpen, onClose, total, cartItems, onPaym
           {cartItems.map((item, index) => (
             <div key={index} className="flex justify-between items-center py-2 border-b border-gray-600 last:border-b-0">
               <span className="text-gray-300 text-sm">{item.name} x{item.quantity}</span>
-              <span className="text-white font-semibold">{(item.price * item.quantity).toFixed(2)}€</span>
+              <span className="text-white font-semibold">{(parseFloat(item.price) * item.quantity).toFixed(2)}€</span>
             </div>
           ))}
         </div>

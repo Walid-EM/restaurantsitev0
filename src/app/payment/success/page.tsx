@@ -1,10 +1,13 @@
 "use client";
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+
+interface PaymentDetails {
+  id: string;
+}
 
 export default function PaymentSuccessPage() {
-  const [paymentDetails, setPaymentDetails] = useState<any>(null);
+  const [paymentDetails, setPaymentDetails] = useState<PaymentDetails | null>(null);
 
   useEffect(() => {
     // Récupérer les paramètres de l'URL
@@ -113,10 +116,10 @@ export default function PaymentSuccessPage() {
                 <svg className="w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 2.25a9.75 9.75 0 100 19.5 9.75 9.75 0 000-19.5z" />
                 </svg>
-                Besoin d'aide ?
+                Besoin d&apos;aide ?
               </h3>
               <p className="text-gray-300 mb-4">
-                Si vous avez des questions concernant votre commande, n'hésitez pas à nous contacter.
+                Si vous avez des questions concernant votre commande, n&apos;hésitez pas à nous contacter.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <a
@@ -148,7 +151,7 @@ export default function PaymentSuccessPage() {
                 href="/"
                 className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-bold py-3 px-6 rounded-lg transition-all duration-200 hover:scale-105"
               >
-                ← Retour à l'accueil
+                ← Retour à l&apos;accueil
               </Link>
               
               <Link
