@@ -1,4 +1,4 @@
-import { Product, Category, Deal, OptionSupplement, OptionExtra, Accompagnements, Boissons } from './types';
+import { Product, Category, Deal, OptionSupplement, OptionExtra, Accompagnements, Boissons, OptionSauce } from './types';
 
 // ============================================================================
 // CONSTANTES ET CONFIGURATIONS
@@ -44,6 +44,12 @@ const IMAGES = {
     CHEDDAR: "/cheddar.png",
     JALAPENOS: "/jalapenos.png",
     OLIVES: "/olives.png"
+  },
+  SAUCES: {
+    BBQ: "/Sauceicone.png",
+    BUFFALO: "/Sauceicone.png",
+    KETCHUP: "/Sauceicone.png",
+    MAYONNAISE: "/Sauceicone.png"
   }
 } as const;
 
@@ -56,8 +62,16 @@ export const supplements: OptionSupplement[] = [
   { id: "supp1", name: "Oignons", image: IMAGES.SUPPLEMENTS.OIGNONS, price: 0.0 },
   { id: "supp2", name: "Tomates", image: IMAGES.SUPPLEMENTS.TOMATES, price: 0.0 },
   { id: "supp3", name: "Carottes", image: IMAGES.SUPPLEMENTS.CAROTTES, price: 0.0 },
-  { id: "supp4", name: "Salade", image: IMAGES.SUPPLEMENTS.SALADE, price: 0.0 },
+  { id: "supp4", name: "Salades", image: IMAGES.SUPPLEMENTS.SALADE, price: 0.0 },
   { id: "supp5", name: "Mais", image: IMAGES.SUPPLEMENTS.MAIS, price: 0.0 }
+];
+
+// Sauces 
+export const sauces: OptionSauce[] = [
+  { id: "sauces1", name: "Sauce BBQ", image: IMAGES.SAUCES.BBQ, price: 0.0 },
+  { id: "sauces2", name: "Sauce Buffalo", image: IMAGES.SAUCES.BUFFALO, price: 0.0 },
+  { id: "sauces3", name: "Sauce Ketchup", image: IMAGES.SAUCES.KETCHUP, price: 0.0 },
+  { id: "sauces4", name: "Sauce Mayonnaise", image: IMAGES.SAUCES.MAYONNAISE, price: 0.0 }
 ];
 
 // Suppléments payants (tous disponibles)
@@ -91,21 +105,24 @@ export const boissons: Boissons[] = [
 // ============================================================================
 
 // Configuration des étapes par catégorie
-const CATEGORY_STEPS: Record<string, { [key: string]: { type: "supplements" | "extra" | "accompagnements" | "boissons"; data: (OptionSupplement | OptionExtra | Accompagnements | Boissons)[]; title: string; } }> = {
+const CATEGORY_STEPS: Record<string, { [key: string]: { type: "supplements" | "extra" | "accompagnements" | "boissons" | "sauces"; data: (OptionSupplement | OptionExtra | Accompagnements | Boissons | OptionSauce)[]; title: string; } }> = {
   assiette: {
-    supplements: { type: "supplements" as const, data: supplements, title: "Salades" },
+    supplements: { type: "supplements" as const, data: supplements, title: "Crudités" },
     extra: { type: "extra" as const, data: extra, title: "Suppléments" },
+    sauces: { type: "sauces" as const, data: sauces, title: "Sauces" },
     accompagnements: { type: "accompagnements" as const, data: accompagnements, title: "Accompagnements" },
     boissons: { type: "boissons" as const, data: boissons, title: "Boissons" }
   },
   sandwich: {
-    supplements: { type: "supplements" as const, data: supplements, title: "Salades" },
+    supplements: { type: "supplements" as const, data: supplements, title: "Crudités" },
     extra: { type: "extra" as const, data: extra, title: "Suppléments" },
+    sauces: { type: "sauces" as const, data: sauces, title: "Sauces" },
     boissons: { type: "boissons" as const, data: boissons, title: "Boissons" }
   },
   tacos: {
-    supplements: { type: "supplements" as const, data: supplements, title: "Salades" },
+    supplements: { type: "supplements" as const, data: supplements, title: "Crudités" },
     extra: { type: "extra" as const, data: extra, title: "Suppléments" },
+    sauces: { type: "sauces" as const, data: sauces, title: "Sauces" },
     boissons: { type: "boissons" as const, data: boissons, title: "Boissons" }
   },
   Bicky: {
@@ -119,6 +136,7 @@ const CATEGORY_STEPS: Record<string, { [key: string]: { type: "supplements" | "e
       data: [extra[0], extra[1], extra[2]], // Cornichons, Cheddar, Jalapenos
       title: "Suppléments payants" 
     },
+    sauces: { type: "sauces" as const, data: sauces, title: "Sauces" },
     accompagnements: { 
       type: "accompagnements" as const, 
       data: [accompagnements[0], accompagnements[1], accompagnements[2]], // Frites, Frites XL, Frites Cheddar Jalapenos
@@ -129,6 +147,10 @@ const CATEGORY_STEPS: Record<string, { [key: string]: { type: "supplements" | "e
       data: [boissons[0], boissons[1], boissons[2]], // Coca-Cola, Sprite, Fanta
       title: "Boissons" 
     }
+  },
+  snacks: {
+    sauces: { type: "sauces" as const, data: sauces, title: "Sauces" },
+    boissons: { type: "boissons" as const, data: boissons, title: "Boissons" }
   }
 };
 

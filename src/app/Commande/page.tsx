@@ -3,8 +3,9 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { products, categories } from "../data";
-import { Product, OptionSupplement, OptionExtra, Accompagnements, Boissons } from "../types";
+import { Product, OptionSupplement, OptionExtra, Accompagnements, Boissons, OptionSauce } from "../types";
 import { useCart } from "../CartProvider";
+import PaymentModal from "../components/PaymentModal";
 
 export default function CommandePage() {
   const [activeCategory, setActiveCategory] = useState("assiette");
@@ -18,15 +19,18 @@ export default function CommandePage() {
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState<{ [key: string]: boolean }>({});
-  const [selectedOptionsDetails, setSelectedOptionsDetails] = useState<{ [key: string]: (OptionSupplement | OptionExtra | Accompagnements | Boissons) | undefined }>({});
-  // États pour gérer la sélection unique des accompagnements et boissons
+  const [selectedOptionsDetails, setSelectedOptionsDetails] = useState<{ [key: string]: (OptionSupplement | OptionExtra | Accompagnements | Boissons | OptionSauce) | undefined }>({});
+  // États pour gérer la sélection unique des accompagnements, boissons et sauces
   const [selectedUniqueOptions, setSelectedUniqueOptions] = useState<{
     accompagnements: string | null;
     boissons: string | null;
+    sauces: string | null;
   }>({
     accompagnements: null,
-    boissons: null
+    boissons: null,
+    sauces: null
   });
   const categoriesRef = useRef<HTMLDivElement>(null);
   const { cartItems, addToCart, updateQuantity, calculateTotal } = useCart();
@@ -78,7 +82,8 @@ export default function CommandePage() {
     setSelectedOptionsDetails({});
     setSelectedUniqueOptions({
       accompagnements: null,
-      boissons: null
+      boissons: null,
+      sauces: null
     });
   };
 
@@ -89,11 +94,12 @@ export default function CommandePage() {
     setSelectedOptionsDetails({});
     setSelectedUniqueOptions({
       accompagnements: null,
-      boissons: null
+      boissons: null,
+      sauces: null
     });
   };
 
-  const toggleOption = (optionId: string, optionData: OptionSupplement | OptionExtra | Accompagnements | Boissons) => {
+  const toggleOption = (optionId: string, optionData: OptionSupplement | OptionExtra | Accompagnements | Boissons | OptionSauce) => {
     setSelectedOptions(prev => ({
       ...prev,
       [optionId]: !prev[optionId]
@@ -106,7 +112,7 @@ export default function CommandePage() {
   };
 
   // Fonction générale pour gérer la sélection unique
-  const toggleUnique = (optionId: string, optionData: Accompagnements | Boissons, type: 'accompagnements' | 'boissons') => {
+  const toggleUnique = (optionId: string, optionData: Accompagnements | Boissons | OptionSauce, type: 'accompagnements' | 'boissons' | 'sauces') => {
     const currentSelected = selectedUniqueOptions[type];
     
     if (currentSelected === optionId) {
@@ -125,17 +131,32 @@ export default function CommandePage() {
       }));
     } else {
       // Sélectionner (remplace la sélection précédente)
+      // D'abord, nettoyer toutes les anciennes options du même type
+      setSelectedOptionsDetails(prev => {
+        const newState = { ...prev };
+        // Supprimer l'ancienne option du même type si elle existe
+        if (currentSelected) {
+          delete newState[currentSelected];
+        }
+        // Ajouter la nouvelle option
+        newState[optionId] = optionData;
+        return newState;
+      });
+      
+      setSelectedOptions(prev => {
+        const newState = { ...prev };
+        // Désélectionner l'ancienne option du même type si elle existe
+        if (currentSelected) {
+          newState[currentSelected] = false;
+        }
+        // Sélectionner la nouvelle option
+        newState[optionId] = true;
+        return newState;
+      });
+      
       setSelectedUniqueOptions(prev => ({
         ...prev,
         [type]: optionId
-      }));
-      setSelectedOptions(prev => ({
-        ...prev,
-        [optionId]: true
-      }));
-      setSelectedOptionsDetails(prev => ({
-        ...prev,
-        [optionId]: optionData
       }));
     }
   };
@@ -146,7 +167,7 @@ export default function CommandePage() {
     const basePrice = parseFloat(selectedProduct.price.replace('€', '').trim());
     let total = basePrice;
     
-    Object.values(selectedOptionsDetails).forEach((option: OptionSupplement | OptionExtra | Accompagnements | Boissons | undefined) => {
+    Object.values(selectedOptionsDetails).forEach((option: OptionSupplement | OptionExtra | Accompagnements | Boissons | OptionSauce | undefined) => {
       if (option && option.price) {
         total += option.price;
       }
@@ -161,7 +182,7 @@ export default function CommandePage() {
       const uniqueId = `${selectedProduct.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       
       // Récupérer les options sélectionnées
-      const selectedOptionsList = Object.values(selectedOptionsDetails).filter((option): option is OptionSupplement | OptionExtra | Accompagnements | Boissons => option !== undefined);
+      const selectedOptionsList = Object.values(selectedOptionsDetails).filter((option): option is OptionSupplement | OptionExtra | Accompagnements | Boissons | OptionSauce => option !== undefined);
       
       // Créer l'objet de commande avec options
       const orderItem = {
@@ -591,7 +612,7 @@ export default function CommandePage() {
                                />
                              </div>
                              <h2 className="font-bold text-xl text-white bg-gradient-to-r from-green-400 to-green-500 bg-clip-text text-transparent">
-                               {supplements.title || "Salades"}
+                               {supplements.title || "Crudités"}
                              </h2>
                            </div>
                            {supplements.data && supplements.data.length > 0 ? (
@@ -623,6 +644,58 @@ export default function CommandePage() {
                          </div>
                        );
                      })()}
+
+                       {/* Sauces */}
+                       {getCategorySteps(selectedProduct.category)?.sauces && (
+                       <div className="mb-8 bg-gray-700/50 mx-4 rounded-xl p-6 border border-gray-600 shadow-lg">
+                         <div className="flex items-center mb-6">
+                           <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center mr-3">
+                             <Image 
+                               src="/Sauceicone.png" 
+                               alt="Sauces" 
+                               width={20} 
+                               height={20} 
+                               className="w-5 h-5"
+                             />
+                           </div>
+                           <h2 className="font-bold text-xl text-white bg-gradient-to-r from-red-400 to-red-500 bg-clip-text text-transparent">
+                             {getCategorySteps(selectedProduct.category)?.sauces.title || "Sauces"}
+                           </h2>
+                         </div>
+                         <ul className="space-y-3">
+                           {getCategorySteps(selectedProduct.category)?.sauces.data.map((item) => {
+                             const isSelected = selectedUniqueOptions.sauces === item.id;
+                             const isDisabled = selectedUniqueOptions.sauces !== null && selectedUniqueOptions.sauces !== item.id;
+                             
+                             return (
+                               <li 
+                                 key={item.id} 
+                                 onClick={() => toggleUnique(item.id, item, 'sauces')}
+                                 className={`bg-gray-600/50 rounded-lg p-3 border border-gray-500 flex justify-between items-center transition-all duration-200 ${
+                                   isDisabled ? 'opacity-40' : 'opacity-100'
+                                 } cursor-pointer hover:bg-gray-600/70 hover:border-gray-400 group`}
+                               >
+                                 <div>
+                                   <div className="text-white text-base font-medium">{item.name}</div>
+                                 </div>
+                                 <div
+                                   className={`w-6 h-6 border-2 border-gray-400 rounded-full flex items-center justify-center transition-all duration-200 ${
+                                     isSelected ? 'bg-yellow-400 border-yellow-400' : 'bg-gray-700'
+                                   } ${!isDisabled ? 'group-hover:bg-gray-600' : ''}`}
+                                 >
+                                   {isSelected && (
+                                     <svg className="w-4 h-4 text-black" fill="currentColor" viewBox="0 0 20 20">
+                                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                     </svg>
+                                   )}
+                                 </div>
+                               </li>
+                             );
+                           })}
+                         </ul>
+                       </div>
+                     )}
+
 
                           {/* Suppléments payants */}
                       {getCategorySteps(selectedProduct.category)?.extra && (
@@ -688,10 +761,10 @@ export default function CommandePage() {
                              return (
                                <li 
                                  key={item.id} 
-                                 onClick={() => !isDisabled && toggleUnique(item.id, item, 'accompagnements')}
+                                 onClick={() => toggleUnique(item.id, item, 'accompagnements')}
                                  className={`bg-gray-600/50 rounded-lg p-3 border border-gray-500 flex justify-between items-center transition-all duration-200 ${
-                                   isDisabled ? 'opacity-40 cursor-not-allowed' : 'opacity-100 cursor-pointer hover:bg-gray-600/70 hover:border-gray-400'
-                                 } group`}
+                                   isDisabled ? 'opacity-40' : 'opacity-100'
+                                 } cursor-pointer hover:bg-gray-600/70 hover:border-gray-400 group`}
                                >
                                  <div>
                                    <div className="text-white text-base font-medium">{item.name}</div>
@@ -740,10 +813,10 @@ export default function CommandePage() {
                              return (
                                <li 
                                  key={item.id} 
-                                 onClick={() => !isDisabled && toggleUnique(item.id, item, 'boissons')}
+                                 onClick={() => toggleUnique(item.id, item, 'boissons')}
                                  className={`bg-gray-600/50 rounded-lg p-3 border border-gray-500 flex justify-between items-center transition-all duration-200 ${
-                                   isDisabled ? 'opacity-40 cursor-not-allowed' : 'opacity-100 cursor-pointer hover:bg-gray-600/70 hover:border-gray-400'
-                                 } group`}
+                                   isDisabled ? 'opacity-40' : 'opacity-100'
+                                 } cursor-pointer hover:bg-gray-600/70 hover:border-gray-400 group`}
                                >
                                  <div>
                                    <div className="text-white text-base font-medium">{item.name}</div>
@@ -1063,8 +1136,8 @@ export default function CommandePage() {
                 {/* Option Sur place modernisée */}
                 <button
                   onClick={() => {
-                    // Action à implémenter
-                    console.log('Sur place sélectionné');
+                    setIsConfirmationOpen(false);
+                    setIsPaymentModalOpen(true);
                   }}
                   className="group relative bg-gradient-to-br from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 text-white h-full p-8 rounded-2xl flex flex-col items-center justify-center transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/30 border border-gray-600 hover:border-yellow-400/60 overflow-hidden"
                 >
@@ -1107,8 +1180,8 @@ export default function CommandePage() {
                 {/* Option A emporter modernisée */}
                 <button
                   onClick={() => {
-                    // Action à implémenter
-                    console.log('A emporter sélectionné');
+                    setIsConfirmationOpen(false);
+                    setIsPaymentModalOpen(true);
                   }}
                   className="group relative bg-gradient-to-br from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 text-white h-full p-8 rounded-2xl flex flex-col items-center justify-center transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/30 border border-gray-600 hover:border-yellow-400/60 overflow-hidden"
                 >
@@ -1150,19 +1223,24 @@ export default function CommandePage() {
               </div>
             </div>
 
-            {/* Footer avec bouton Retour modernisé */}
-            <div className="p-6 border-t border-gray-600 flex justify-between items-center bg-gradient-to-r from-gray-800 to-gray-900">
-              <button
-                onClick={() => {
-                  setIsConfirmationOpen(false);
-                  setIsCartDialogOpen(true);
-                }}
-                className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black border border-yellow-400 hover:border-yellow-500 rounded-xl py-3 px-6 font-semibold transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-yellow-500/25"
-              >
-                ← Retour au panier
-              </button>
-              <div className="text-gray-300 text-sm bg-gray-700/50 px-4 py-2 rounded-lg border border-gray-600">
-                <p>Total: <span className="text-yellow-400 font-bold text-lg">{calculateTotal().toFixed(2)}€</span></p>
+            {/* Footer avec boutons modernisés */}
+            <div className="p-6 border-t border-gray-600 bg-gradient-to-r from-gray-800 to-gray-900">
+              <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                <button
+                  onClick={() => {
+                    setIsConfirmationOpen(false);
+                    setIsCartDialogOpen(true);
+                  }}
+                  className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black border border-yellow-400 hover:border-yellow-500 rounded-xl py-3 px-6 font-semibold transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-yellow-500/25"
+                >
+                  ← Retour au panier
+                </button>
+                
+                <div className="flex flex-col items-center gap-3">
+                  <div className="text-gray-300 text-sm bg-gray-700/50 px-4 py-2 rounded-lg border border-gray-600">
+                    <p>Total: <span className="text-yellow-400 font-bold text-lg">{calculateTotal().toFixed(2)}€</span></p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1200,6 +1278,19 @@ export default function CommandePage() {
           </div>
         </div>
       )}
+
+      {/* Modal de paiement */}
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        total={calculateTotal()}
+        cartItems={cartItems}
+        onPaymentSuccess={() => {
+          setIsPaymentModalOpen(false);
+          // Ici vous pourriez vider le panier ou rediriger
+          console.log('Paiement réussi !');
+        }}
+      />
     </div>
     </div>
   );

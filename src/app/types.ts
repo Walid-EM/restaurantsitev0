@@ -34,6 +34,13 @@ export interface OptionExtra {
   image?: string;
 }
 
+export interface OptionSauce {
+  id: string;
+  name: string;
+  price: number;
+  image?: string;
+}
+
 export interface Category {
   id: string;
   name: string;
@@ -41,8 +48,8 @@ export interface Category {
   description: string;
   steps?: {
       [key: string]: {
-          type: "supplements" | "extra" | "accompagnements" | "boissons";
-          data: (OptionSupplement | OptionExtra | Accompagnements | Boissons)[];
+          type: "supplements" | "extra" | "accompagnements" | "boissons" | "sauces";
+          data: (OptionSupplement | OptionExtra | Accompagnements | Boissons | OptionSauce)[];
           title: string;
       };
   };

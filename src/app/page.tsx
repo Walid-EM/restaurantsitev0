@@ -259,7 +259,7 @@ export default function Home() {
         {activePage === 'home' && (
           <div className="flex-1 flex flex-col items-center justify-start w-full">
             {/* Hero Section */}
-            <div className="w-full max-w-6xl px-4 sm:px-6 pt-16 sm:pt-20 pb-12 sm:pb-16 mx-auto">
+            <div className="w-full max-w-4xl px-4 sm:px-6 pt-16 sm:pt-20 pb-12 sm:pb-16 mx-auto">
               {/* Conteneur principal avec fond semi-transparent */}
               <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-md rounded-3xl p-8 sm:p-12 border border-gray-600/50 shadow-2xl shadow-black/50 relative overflow-hidden group">
                 {/* Éléments décoratifs en arrière-plan */}
@@ -272,7 +272,7 @@ export default function Home() {
                 {/* Contenu principal */}
                 <div className="text-center text-white relative z-10">
                   {/* Titre principal avec effet de gradient */}
-                  <h1 className="text-4xl sm:text-5xl md:text-7xl xl:text-8xl font-bold mb-6 sm:mb-8 drop-shadow-2xl animate-in slide-in-from-bottom duration-700 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
+                  <h1 className="text-5xl sm:text-5xl md:text-7xl xl:text-7xl font-bold mb-6 sm:mb-8 drop-shadow-2xl animate-in slide-in-from-bottom duration-700 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
                     Delice Wand
                   </h1>
                   
