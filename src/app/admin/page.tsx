@@ -487,7 +487,7 @@ export default function AdminDashboard() {
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">
-                URL de l'image
+                URL de l&apos;image
               </label>
               <input
                 type="text"
