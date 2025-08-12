@@ -190,7 +190,7 @@ export default function PaymentModal({ isOpen, onClose, total, cartItems }: Paym
         >
           <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-2">
             <Image 
-              src="/logobancontact.png" 
+              src="/logoBancontact.png" 
               alt="Bancontact" 
               width={48} 
               height={48} 
@@ -206,7 +206,7 @@ export default function PaymentModal({ isOpen, onClose, total, cartItems }: Paym
         >
           <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-2">
             <Image 
-              src="/logopaypal.png" 
+              src="/logoPayPal.png" 
               alt="PayPal" 
               width={48} 
               height={48} 
@@ -238,7 +238,7 @@ export default function PaymentModal({ isOpen, onClose, total, cartItems }: Paym
         >
           <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-2">
             <Image 
-              src="/logogooglepay.png" 
+              src="/logoGooglePay.png" 
               alt="Google Pay" 
               width={48} 
               height={48} 
