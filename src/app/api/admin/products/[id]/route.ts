@@ -12,13 +12,14 @@ async function checkAdminPermissions(_request: NextRequest) {
 // Mettre à jour un produit
 export async function PUT(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     if (!(await checkAdminPermissions(_request))) {
       return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
     }
 
+    const params = await context.params;
     const body = await _request.json();
     const { name, description, price, category, image } = body;
 
@@ -69,13 +70,14 @@ export async function PUT(
 // Supprimer un produit
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     if (!(await checkAdminPermissions(_request))) {
       return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
     }
 
+    const params = await context.params;
     await connectDB();
 
     const deletedProduct = await Product.findByIdAndDelete(params.id);
