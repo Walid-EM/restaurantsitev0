@@ -50,19 +50,24 @@ const handler = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        (token as any).id = user.id;
-        (token as any).role = user.role;
+        // Utiliser des propriétés personnalisées sur le token
+        return {
+          ...token,
+          id: user.id,
+          role: user.role,
+        };
       }
       return token;
     },
     async session({ session, token }) {
       if (token) {
+        // Étendre la session avec les propriétés personnalisées
         return {
           ...session,
           user: {
             ...session.user,
-            id: (token as any).id || '',
-            role: (token as any).role || 'user'
+            id: (token as Record<string, unknown>).id as string || '',
+            role: (token as Record<string, unknown>).role as string || 'user'
           }
         };
       }
