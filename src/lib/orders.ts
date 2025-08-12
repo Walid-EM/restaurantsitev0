@@ -1,19 +1,20 @@
 import { connectDB } from './mongodb';
 import { CartItem } from '@/app/types';
+import { ObjectId } from 'mongodb';
 
 interface GlobalWithMongoose {
   mongoose?: {
     connection: {
       db: {
         collection: (name: string) => {
-          insertOne: (doc: any) => Promise<{ insertedId: any }>;
-          find: (query: any) => {
-            sort: (sort: any) => {
-              toArray: () => Promise<any[]>;
+          insertOne: (doc: Order) => Promise<{ insertedId: ObjectId }>;
+          find: (query: Record<string, unknown>) => {
+            sort: (sort: Record<string, 1 | -1>) => {
+              toArray: () => Promise<Order[]>;
             };
           };
-          findOne: (query: any) => Promise<any | null>;
-          updateOne: (query: any, update: any) => Promise<{ modifiedCount: number }>;
+          findOne: (query: Record<string, unknown>) => Promise<Order | null>;
+          updateOne: (query: Record<string, unknown>, update: Record<string, unknown>) => Promise<{ modifiedCount: number }>;
         };
       };
     };
@@ -73,7 +74,7 @@ export async function getOrders(): Promise<Order[]> {
       .sort({ orderDate: -1 })
       .toArray();
     
-    return orders as Order[];
+    return orders;
   } catch (error) {
     console.error('Erreur lors de la récupération des commandes:', error);
     throw new Error('Impossible de récupérer les commandes');
@@ -89,9 +90,9 @@ export async function getOrderById(orderId: string): Promise<Order | null> {
     const ordersCollection = db.collection("orders");
     
     const order = await ordersCollection.findOne({ _id: orderId });
-    return order as Order | null;
-  } catch (username) {
-    console.error('Erreur lors de la récupération de la commande:', username);
+    return order;
+  } catch (error) {
+    console.error('Erreur lors de la récupération de la commande:', error);
     throw new Error('Impossible de récupérer la commande');
   }
 }
