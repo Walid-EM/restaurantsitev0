@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { useState, useEffect } from "react";
+import MongoDBTest from "./components/MongoDBTest";
 
 export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -811,6 +812,24 @@ export default function Home() {
                   </button>
                 </div>
                 <div className="w-full md:w-[30%] h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto mt-5 mb-8"></div>
+              </div>
+
+              {/* Test MongoDB */}
+              <div className="mb-8">
+                <div className="inline-block bg-gradient-to-br from-gray-700/60 to-gray-800/60 rounded-lg p-4 border border-gray-600/30 shadow-md mb-6">
+                  <h3 className="text-2xl font-bold text-white mb-0 flex items-center">
+                    <span className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mr-3 text-white text-sm font-bold">🗄️</span>
+                    Test MongoDB Atlas
+                  </h3>
+                </div>
+                <div className="bg-white/10 rounded-xl p-6 border border-white/20">
+                  <div className="text-white">
+                    <h4 className="text-xl font-bold mb-4">Test MongoDB Atlas</h4>
+                    <p>Cette section devrait être visible maintenant.</p>
+                    <p>Si vous voyez ce texte, le composant MongoDBTest fonctionne.</p>
+                    <MongoDBTest />
+                  </div>
+                </div>
               </div>
             </div>
           </div>

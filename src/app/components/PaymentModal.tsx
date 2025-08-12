@@ -99,14 +99,19 @@ export default function PaymentModal({ isOpen, onClose, total, cartItems }: Paym
     setPaymentError(null);
 
     try {
+      //Convertir le montant en centimes pour Mollie
+      const amountInCents = Math.round(total * 100);
+      
       const response = await fetch('/api/mollie/create-payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          amount: total,
+          amount: amountInCents,
           description: `Commande restaurant - ${cartItems.length} article(s)`,
+          redirectUrl: `${window.location.origin}/payment/success`, // URL de retour
+          webhookUrl: `${window.location.origin}/api/mollie/webhook`, // URL webhook
           metadata: {
             customerInfo: selectedPaymentMethod === 'paypal' || selectedPaymentMethod === 'bancontact' ? {} : customerInfo,
             cartItems,
@@ -118,10 +123,12 @@ export default function PaymentModal({ isOpen, onClose, total, cartItems }: Paym
 
       const data = await response.json();
 
+      //Gérer les erreurs
       if (data.success) {
         window.location.href = data.checkoutUrl;
       } else {
-        setPaymentError(data.error || 'Erreur lors de la création du paiement');
+        setPaymentError(data.error || `Erreur: ${data.message || 'Erreur inconnue'}`);
+        console.error('Erreur API Mollie:', data);
       }
     } catch (error) {
       console.error('Erreur paiement:', error);
@@ -382,9 +389,9 @@ export default function PaymentModal({ isOpen, onClose, total, cartItems }: Paym
           <div className="flex items-center space-x-2">
             <Image 
               src={selectedPaymentMethod === 'creditcard' ? '/logoCB.png' : 
-                   selectedPaymentMethod === 'paypal' ? '/logopaypal.png' :
-                   selectedPaymentMethod === 'bancontact' ? '/logobancontact.png' :
-                   selectedPaymentMethod === 'applepay' ? '/logoapplepay.png' : '/logogooglepay.png'} 
+                   selectedPaymentMethod === 'paypal' ? '/logoPayPal.png' :
+                   selectedPaymentMethod === 'bancontact' ? '/logoBancontact.png' :
+                   selectedPaymentMethod === 'applepay' ? '/logoapplepay.png' : '/logoGooglePay.png'} 
               alt={selectedPaymentMethod || ''} 
               width={24} 
               height={24} 
