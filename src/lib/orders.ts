@@ -1,6 +1,14 @@
 import { connectDB } from './mongodb';
 import { CartItem } from '@/app/types';
 
+interface GlobalWithMongoose {
+  mongoose?: {
+    connection: {
+      db: any;
+    };
+  };
+}
+
 export interface Order {
   _id?: string;
   customerName: string;
@@ -19,7 +27,7 @@ export interface Order {
 export async function createOrder(orderData: Omit<Order, '_id' | 'orderDate'>): Promise<Order> {
   try {
     await connectDB();
-    const db = (global as any).mongoose.connection.db;
+    const db = (global as GlobalWithMongoose).mongoose?.connection.db;
     if (!db) throw new Error('Base de données non connectée');
     
     const ordersCollection = db.collection("orders");
@@ -44,7 +52,7 @@ export async function createOrder(orderData: Omit<Order, '_id' | 'orderDate'>): 
 export async function getOrders(): Promise<Order[]> {
   try {
     await connectDB();
-    const db = (global as any).mongoose.connection.db;
+    const db = (global as GlobalWithMongoose).mongoose?.connection.db;
     if (!db) throw new Error('Base de données non connectée');
     
     const ordersCollection = db.collection("orders");
@@ -64,15 +72,15 @@ export async function getOrders(): Promise<Order[]> {
 export async function getOrderById(orderId: string): Promise<Order | null> {
   try {
     await connectDB();
-    const db = (global as any).mongoose.connection.db;
+    const db = (global as GlobalWithMongoose).mongoose?.connection.db;
     if (!db) throw new Error('Base de données non connectée');
     
     const ordersCollection = db.collection("orders");
     
     const order = await ordersCollection.findOne({ _id: orderId });
     return order as Order | null;
-  } catch (error) {
-    console.error('Erreur lors de la récupération de la commande:', error);
+  } catch (username) {
+    console.error('Erreur lors de la récupération de la commande:', username);
     throw new Error('Impossible de récupérer la commande');
   }
 }
@@ -80,7 +88,7 @@ export async function getOrderById(orderId: string): Promise<Order | null> {
 export async function updateOrderStatus(orderId: string, status: Order['status']): Promise<boolean> {
   try {
     await connectDB();
-    const db = (global as any).mongoose.connection.db;
+    const db = (global as GlobalWithMongoose).mongoose?.connection.db;
     if (!db) throw new Error('Base de données non connectée');
     
     const ordersCollection = db.collection("orders");

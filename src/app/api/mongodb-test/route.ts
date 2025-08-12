@@ -29,7 +29,7 @@ export async function GET() {
       success: true,
       message: 'Connexion MongoDB réussie !',
       database: 'FristDB',
-      collections: collections.map((col: any) => col.name),
+      collections: collections.map((col: { name: string }) => col.name),
       timestamp: new Date().toISOString(),
       connectionState: mongoose.connection.readyState
     });

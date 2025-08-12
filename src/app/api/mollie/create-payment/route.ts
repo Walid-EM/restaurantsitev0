@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createMollieClient } from '@mollie/api-client';
+import { createMollieClient, PaymentMethod } from '@mollie/api-client';
 
 // Initialiser le client Mollie
 const mollieClient = createMollieClient({ 
@@ -25,13 +25,13 @@ export async function POST(request: NextRequest) {
     console.log('Méthode de paiement sélectionnée:', metadata?.paymentMethod);
     
           // ✅ Déterminer la méthode de paiement basée sur les métadonnées
-      let paymentMethod: any = undefined;
+      let paymentMethod: PaymentMethod | undefined = undefined;
       if (metadata?.paymentMethod === 'paypal') {
-        paymentMethod = 'paypal';
+        paymentMethod = PaymentMethod.paypal;
       } else if (metadata?.paymentMethod === 'bancontact') {
-        paymentMethod = 'bancontact';
+        paymentMethod = PaymentMethod.bancontact;
       } else if (metadata?.paymentMethod === 'creditcard') {
-        paymentMethod = 'creditcard';
+        paymentMethod = PaymentMethod.creditcard;
       }
 
       // Créer le paiement avec Mollie

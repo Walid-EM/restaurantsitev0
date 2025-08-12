@@ -35,7 +35,7 @@ export default function AdminLogin() {
           setError('Accès non autorisé');
         }
       }
-    } catch (error) {
+    } catch (_error) {
       setError('Une erreur est survenue');
     } finally {
       setLoading(false);

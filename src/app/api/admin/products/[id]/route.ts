@@ -3,7 +3,7 @@ import { connectDB } from '@/lib/mongodb';
 import Product from '@/models/Product';
 
 // Vérifier les permissions admin
-async function checkAdminPermissions(request: NextRequest) {
+async function checkAdminPermissions(_request: NextRequest) {
   // Cette fonction sera implémentée plus tard avec NextAuth
   // Pour l'instant, on laisse passer
   return true;
@@ -11,15 +11,15 @@ async function checkAdminPermissions(request: NextRequest) {
 
 // Mettre à jour un produit
 export async function PUT(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    if (!(await checkAdminPermissions(request))) {
+    if (!(await checkAdminPermissions(_request))) {
       return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
     }
 
-    const body = await request.json();
+    const body = await _request.json();
     const { name, description, price, category, image } = body;
 
     if (!name || !price || !category) {
@@ -68,11 +68,11 @@ export async function PUT(
 
 // Supprimer un produit
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    if (!(await checkAdminPermissions(request))) {
+    if (!(await checkAdminPermissions(_request))) {
       return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
     }
 

@@ -2,8 +2,17 @@
 
 import { useState } from 'react';
 
+interface TestResult {
+  success: boolean;
+  message: string;
+  database?: string;
+  collections?: string[];
+  timestamp?: string;
+  error?: string;
+}
+
 export default function MongoDBTest() {
-  const [testResult, setTestResult] = useState<any>(null);
+  const [testResult, setTestResult] = useState<TestResult | null>(null);
   const [loading, setLoading] = useState(false);
 
   const testConnection = async () => {
