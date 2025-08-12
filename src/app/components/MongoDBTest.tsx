@@ -69,7 +69,7 @@ export default function MongoDBTest() {
       )}
 
       <div className="mt-4 text-sm text-gray-600">
-        <p><strong>Note:</strong> Assurez-vous d'avoir créé le fichier <code>.env.local</code> avec votre chaîne de connexion MongoDB Atlas.</p>
+        <p><strong>Note:</strong> Assurez-vous d&apos;avoir créé le fichier <code>.env.local</code> avec votre chaîne de connexion MongoDB Atlas.</p>
         <p>Remplacez <code>&lt;db_password&gt;</code> par votre vrai mot de passe dans la variable <code>MONGODB_URI</code>.</p>
       </div>
     </div>

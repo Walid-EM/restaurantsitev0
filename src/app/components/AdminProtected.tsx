@@ -26,7 +26,7 @@ export default function AdminProtected({ children }: AdminProtectedProps) {
   if (status === 'loading') {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-white text-xl">Vérification de l'authentification...</div>
+        <div className="text-white text-xl">Vérification de l&apos;authentification...</div>
       </div>
     );
   }

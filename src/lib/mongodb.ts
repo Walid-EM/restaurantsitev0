@@ -15,7 +15,7 @@ interface GlobalWithMongoose {
   mongoose?: Cached;
 }
 
-let cached: Cached = (global as GlobalWithMongoose).mongoose || { conn: null, promise: null };
+const cached: Cached = (global as GlobalWithMongoose).mongoose || { conn: null, promise: null };
 
 if (!(global as GlobalWithMongoose).mongoose) {
   (global as GlobalWithMongoose).mongoose = cached;

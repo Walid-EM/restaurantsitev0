@@ -4,7 +4,18 @@ import { CartItem } from '@/app/types';
 interface GlobalWithMongoose {
   mongoose?: {
     connection: {
-      db: any;
+      db: {
+        collection: (name: string) => {
+          insertOne: (doc: any) => Promise<{ insertedId: any }>;
+          find: (query: any) => {
+            sort: (sort: any) => {
+              toArray: () => Promise<any[]>;
+            };
+          };
+          findOne: (query: any) => Promise<any | null>;
+          updateOne: (query: any, update: any) => Promise<{ modifiedCount: number }>;
+        };
+      };
     };
   };
 }
