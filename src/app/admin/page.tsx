@@ -761,10 +761,10 @@ export default function AdminDashboard() {
       {/* Métriques principales */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-          <h3 className="text-lg font-semibold text-white mb-4">Chiffre d'affaires</h3>
+          <h3 className="text-lg font-semibold text-white mb-4">Chiffre d&apos;affaires</h3>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-gray-400">Aujourd'hui</span>
+              <span className="text-gray-400">Aujourd&apos;hui</span>
               <span className="text-white font-medium">{stats.dailyRevenue}€</span>
             </div>
             <div className="flex justify-between">
