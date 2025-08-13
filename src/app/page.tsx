@@ -5,17 +5,108 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import MongoDBTest from "./components/MongoDBTest";
 
+// Types pour les données de la base
+interface Category {
+  _id: string;
+  name: string;
+  description: string;
+  image: string;
+  isActive: boolean;
+}
+
+interface Product {
+  _id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  image: string;
+  isAvailable: boolean;
+  
+  // Nouvelles propriétés optionnelles inspirées de Bicky
+  ingredients?: string[];
+  isSpicy?: boolean;
+  isVegetarian?: boolean;
+  metadata?: Record<string, unknown>;
+}
+
+interface Extra {
+  _id: string;
+  name: string;
+  price: number;
+  image: string;
+  isActive: boolean;
+}
+
+// Interface Bicky supprimée - utilisez Product avec category: 'bicky'
+
 export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-
   const [activePage, setActivePage] = useState('home');
+  
+  // États pour les données de la base
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [extras, setExtras] = useState<Extra[]>([]);
+  const [bickies, setBickies] = useState<Product[]>([]); // Maintenant des Products avec category: 'bicky'
+  const [loading, setLoading] = useState(true);
+
+  // Fonction pour récupérer les données
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      
+      // Récupérer les catégories
+      const categoriesRes = await fetch('/api/categories');
+      if (categoriesRes.ok) {
+        const categoriesData = await categoriesRes.json();
+        setCategories(categoriesData.categories || []);
+      }
+      
+      // Récupérer TOUS les produits via l'API unifiée
+      const unifiedRes = await fetch('/api/products/unified');
+      if (unifiedRes.ok) {
+        const unifiedData = await unifiedRes.json();
+        if (unifiedData.success && Array.isArray(unifiedData.products)) {
+          // Séparer les produits classiques des Bicky
+          const allProducts = unifiedData.products;
+          const regularProducts = allProducts.filter((p: Product) => p.category !== 'bicky');
+          const bickyProducts = allProducts.filter((p: Product) => p.category === 'bicky');
+          
+          setProducts(regularProducts);
+          setBickies(bickyProducts); // Les produits Bicky sont maintenant des Products avec les bonnes propriétés
+          
+          console.log('✅ Données unifiées:', {
+            total: allProducts.length,
+            regular: regularProducts.length,
+            bicky: bickyProducts.length
+          });
+        }
+      }
+      
+      // Récupérer les extras
+      const extrasRes = await fetch('/api/extras');
+      if (extrasRes.ok) {
+        const extrasData = await extrasRes.json();
+        setExtras(extrasData.extras || []);
+      }
+      
+    } catch (error) {
+      console.error('Erreur lors de la récupération des données:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Charger les données au montage du composant
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const toggleMobileMenu = () => {
     console.log('Toggle mobile menu clicked');
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
-
 
   // Gestion du clavier pour fermer le menu mobile
   useEffect(() => {
@@ -29,6 +120,10 @@ export default function Home() {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, []);
 
+  // Fonction pour obtenir les produits par catégorie
+  const getProductsByCategory = (categoryName: string) => {
+    return products.filter(product => product.category === categoryName.toLowerCase());
+  };
 
 
 
@@ -164,7 +259,7 @@ export default function Home() {
                   activePage === 'carte' ? 'text-white bg-yellow-400/20 border-l-4 border-yellow-400' : 'text-gray-300 hover:text-white hover:bg-white/5'
                 }`}
               >
-                La Carte
+                Notre Menu
               </button>
               <button 
                 onClick={() => {setActivePage('localisation'); setIsMobileMenuOpen(false);}}
@@ -406,7 +501,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-        )}
+        )   }
         
         {activePage === 'restaurant' && (
           <div className="flex-1 flex items-center justify-center pt-8">
@@ -486,70 +581,35 @@ export default function Home() {
         {activePage === 'carte' && (
           <div className="flex-1 flex items-center justify-center pt-8">
             <div className="text-center h-[95%] w-full md:w-[80%] p-8 bg-gradient-to-br from-gray-800/95 to-gray-900/95 rounded-2xl shadow-2xl border border-gray-600/50 backdrop-blur-md flex flex-col overflow-y-auto">
-              <h2 className="text-4xl font-bold text-white mb-3 bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">LA CARTE</h2>
+              <h2 className="text-4xl font-bold text-white mb-3 bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">NOTRE MENU</h2>
               <div className="h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto" style={{ width: '300px' }}></div>
-              
-              {/* Section Catégories */}
-              <div className="mb-8 text-left">
-                <div className="inline-block bg-gradient-to-br from-gray-700/60 to-gray-800/60 rounded-lg p-4 border border-gray-600/30 shadow-md mb-6">
-                  <h3 className="text-2xl font-bold text-white mb-0 flex items-center">
-                    Nos Catégories
-                  </h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="group bg-gradient-to-br from-gray-700/80 to-gray-800/80 rounded-xl p-6 border border-gray-600/50 hover:border-yellow-400/50 transition-all duration-300 hover:scale-105">
-                    <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                      <span className="text-2xl">🍽️</span>
-                    </div>
-                    <h4 className="text-xl font-bold text-white mb-3">Assiettes</h4>
-                    <p className="text-gray-300 mb-4">Nos délicieuses assiettes composées avec des ingrédients frais et locaux.</p>
-                    <div className="text-yellow-400 font-semibold">À partir de 9.50€</div>
-                  </div>
-                  
-                  <div className="group bg-gradient-to-br from-gray-700/80 to-gray-800/80 rounded-xl p-6 border border-gray-600/50 hover:border-yellow-400/50 transition-all duration-300 hover:scale-105">
-                    <div className="w-16 h-16 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                      <span className="text-2xl">🍟</span>
-                    </div>
-                    <h4 className="text-xl font-bold text-white mb-3">Accompagnements</h4>
-                    <p className="text-gray-300 mb-4">Frites maison, salades fraîches et autres délices pour accompagner vos plats.</p>
-                    <div className="text-yellow-400 font-semibold">À partir de 2.50€</div>
-                  </div>
-                  
-                  <div className="group bg-gradient-to-br from-gray-700/80 to-gray-800/80 rounded-xl p-6 border border-gray-600/50 hover:border-yellow-400/50 transition-all duration-300 hover:scale-105">
-                    <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                      <span className="text-2xl">🥤</span>
-                    </div>
-                    <h4 className="text-xl font-bold text-white mb-3">Boissons</h4>
-                    <p className="text-gray-300 mb-4">Sodas, jus naturels et boissons rafraîchissantes pour étancher votre soif.</p>
-                    <div className="text-yellow-400 font-semibold">À partir de 2€</div>
-                  </div>
-                  
-                  <div className="group bg-gradient-to-br from-gray-700/80 to-gray-800/80 rounded-xl p-6 border border-gray-600/50 hover:border-yellow-400/50 transition-all duration-300 hover:scale-105">
-                    <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                      <span className="text-2xl">🍰</span>
-                    </div>
-                    <h4 className="text-xl font-bold text-white mb-3">Desserts</h4>
-                    <p className="text-gray-300 mb-4">Délicieuses pâtisseries et desserts maison pour terminer votre repas en beauté.</p>
-                    <div className="text-yellow-400 font-semibold">À partir de 3€</div>
-                  </div>
-                </div>
-                <div className="w-full md:w-[30%] h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto mt-5 mb-8"></div>
-              </div>
+              <p className="text-xl text-gray-300 mb-8 leading-relaxed mt-6">
+                Découvrez nos délicieuses spécialités directement depuis notre base de données
+              </p>
 
-              {/* Call to Action */}
-              <div className="text-center">
-                <p className="text-lg text-gray-200 mb-6">
-                  Découvrez notre menu complet et commandez en ligne pour une expérience culinaire exceptionnelle !
-                </p>
-                <Link href="/Commande">
-                  <button className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-bold py-4 px-8 rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/50"
-                    style={{ fontFamily: "'Inter', 'Segoe UI', 'Roboto', sans-serif" }}
-                  >
-                    <span className="font-semibold">VOIR LE MENU COMPLET</span>
-                  </button>
-                </Link>
-                <div className="w-full md:w-[30%] h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto mt-5 mb-8"></div>
-              </div>
+              {loading ? (
+                <div className="text-center">
+                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400"></div>
+                  <p className="text-white mt-4">Chargement du menu...</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {categories.map((category) => (
+                    <div key={category._id} className="group bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-md rounded-2xl p-6 border border-gray-600/50 hover:border-yellow-400/50 transition-all duration-300 hover:scale-105">
+                      <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <span className="text-2xl">🏷️</span>
+                      </div>
+                      <h4 className="text-xl font-bold text-white mb-3 text-center">{category.name}</h4>
+                      <p className="text-gray-300 text-center mb-4">{category.description}</p>
+                      <div className="text-center">
+                        <span className="text-yellow-400 font-semibold">
+                          {getProductsByCategory(category.name).length} produits
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}

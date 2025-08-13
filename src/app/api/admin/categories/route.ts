@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { connectDB } from '@/lib/mongodb';
 import Category from '@/models/Category';
 
 // Vérifier les permissions admin
-async function checkAdminPermissions() {
-  const session = await getServerSession();
+async function checkAdminPermissions(_request: NextRequest) {
+  const session = await getServerSession(authOptions);
   if (!session || session.user.role !== 'admin') {
     return false;
   }
@@ -13,9 +14,9 @@ async function checkAdminPermissions() {
 }
 
 // GET - Récupérer toutes les catégories
-export async function GET() {
+export async function GET(_request: NextRequest) {
   try {
-    if (!(await checkAdminPermissions())) {
+    if (!(await checkAdminPermissions(_request))) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
@@ -39,7 +40,7 @@ export async function GET() {
 // POST - Créer une nouvelle catégorie
 export async function POST(request: NextRequest) {
   try {
-    if (!(await checkAdminPermissions())) {
+    if (!(await checkAdminPermissions(request))) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 

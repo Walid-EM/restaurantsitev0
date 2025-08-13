@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-export interface IExtra extends mongoose.Document {
+export interface IAccompagnement extends mongoose.Document {
   name: string;
   price: number;
   image: string;
@@ -9,7 +9,7 @@ export interface IExtra extends mongoose.Document {
   updatedAt: Date;
 }
 
-const extraSchema = new mongoose.Schema<IExtra>({
+const accompagnementSchema = new mongoose.Schema<IAccompagnement>({
   name: {
     type: String,
     required: [true, 'Le nom est requis'],
@@ -18,7 +18,7 @@ const extraSchema = new mongoose.Schema<IExtra>({
   price: {
     type: Number,
     required: [true, 'Le prix est requis'],
-    min: [0, 'Le prix ne peut pas être négatif'],
+    min: [0, ' prix ne peut pas être négatif'],
   },
   image: {
     type: String,
@@ -32,4 +32,4 @@ const extraSchema = new mongoose.Schema<IExtra>({
   timestamps: true,
 });
 
-export default mongoose.models.Extra || mongoose.model<IExtra>('Extra', extraSchema);
+export default mongoose.models.Accompagnement || mongoose.model<IAccompagnement>('Accompagnement', accompagnementSchema);

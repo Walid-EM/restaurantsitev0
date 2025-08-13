@@ -185,13 +185,13 @@ const TACOS: Product[] = [
   { id: 18, name: "Tacos Spécial", price: "13.90 €", image: IMAGES.BURGERS.CHEESE, category: "tacos", description: "Tacos premium avec ingrédients sélectionnés" }
 ];
 
-const BICKY: Product[] = [
+export const BICKY: Product[] = [
   { id: 19, name: "Bicky Hamburger", price: "8.50 €", image: IMAGES.BURGERS.CHEESE, category: "Bicky", description: "Bicky Hamburger" },
   { id: 20, name: "Double Bicky Burger", price: "12.90 €", image: IMAGES.BURGERS.DOUBLE, category: "Bicky", description: "Double Bicky Burger" },
   { id: 21, name: "Bicky Poulet", price: "9.50 €", image: IMAGES.BURGERS.CHICKEN, category: "Bicky", description: "Bicky Poulet" },
   { id: 22, name: "Bicky Kebab", price: "10.50 €", image: IMAGES.BURGERS.CHEESE, category: "Bicky", description: "Bicky Kebab" },
   { id: 23, name: "Bicky Kefta", price: "11.90 €", image: IMAGES.BURGERS.CHEESE, category: "Bicky", description: "Bicky Kefta" },
-  { id: 24, name: "Bicky Boulette", price: "14.90 €", image: IMAGES.BURGERS.CHEESE, category: "Bicky", description: "Bicky Boulette" }
+  { id: 24, name: "Bicky Boulette", price: "14.90 €", image: IMAGES.BURGERS.CHEESE, category: "Bicky", description: "Bicky Kefta" }
 ];
 
 const SNACKS: Product[] = [

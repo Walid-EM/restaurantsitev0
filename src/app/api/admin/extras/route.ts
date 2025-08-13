@@ -1,25 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { connectDB } from '@/lib/mongodb';
 import Extra from '@/models/Extra';
 
-// Vérifier les permissions admin
-async function checkAdminPermissions() {
-  const session = await getServerSession();
+async function checkAdminPermissions(_request: NextRequest) {
+  const session = await getServerSession(authOptions);
   if (!session || session.user.role !== 'admin') {
     return false;
   }
   return true;
 }
 
-// GET - Récupérer tous les suppléments
-export async function GET() {
+export async function GET(_request: NextRequest) {
   try {
-    if (!(await checkAdminPermissions())) {
+    if (!(await checkAdminPermissions(_request))) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
     await connectDB();
+    
     const extras = await Extra.find({}).sort({ createdAt: -1 });
     
     return NextResponse.json({
@@ -27,53 +27,40 @@ export async function GET() {
       extras,
       count: extras.length
     });
+    
   } catch (error) {
-    console.error('Erreur lors de la récupération des suppléments:', error);
+    console.error('Erreur lors de la récupération des extras:', error);
     return NextResponse.json({
       success: false,
-      error: 'Erreur lors de la récupération des suppléments'
+      error: 'Erreur lors de la récupération des extras',
+      details: error instanceof Error ? error.message : 'Erreur inconnue'
     }, { status: 500 });
   }
 }
 
-// POST - Créer un nouveau supplément
 export async function POST(request: NextRequest) {
   try {
-    if (!(await checkAdminPermissions())) {
+    if (!(await checkAdminPermissions(request))) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
     const body = await request.json();
-    const { name, description, price, category } = body;
-
-    // Validation
-    if (!name || !description || !price || !category) {
-      return NextResponse.json({
-        success: false,
-        error: 'Tous les champs sont requis'
-      }, { status: 400 });
-    }
-
     await connectDB();
-    const extra = new Extra({
-      name,
-      description,
-      price: parseFloat(price),
-      category
-    });
-
-    await extra.save();
-
+    
+    const extra = new Extra(body);
+    const savedExtra = await extra.save();
+    
     return NextResponse.json({
       success: true,
-      message: 'Supplément créé avec succès',
-      extra
-    }, { status: 201 });
+      extra: savedExtra
+    });
+    
   } catch (error) {
-    console.error('Erreur lors de la création du supplément:', error);
+    console.error('Erreur lors de la création de l\'extra:', error);
     return NextResponse.json({
       success: false,
-      error: 'Erreur lors de la création du supplément'
+      error: 'Erreur lors de la création de l\'extra',
+      details: error instanceof Error ? error.message : 'Erreur inconnue'
     }, { status: 500 });
   }
 }

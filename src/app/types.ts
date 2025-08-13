@@ -1,15 +1,25 @@
 export interface Product {
-  id: number;
+  id?: number; // ID optionnel pour la compatibilité avec l'ancien système
+  _id?: string; // ID MongoDB pour la compatibilité avec le nouveau système
   name: string;
   price: string;
   image: string;
   category: string;
-  description: string;
+  description?: string; // Description optionnelle
+  isAvailable?: boolean; // Disponibilité du produit
+  
+  // Nouvelles propriétés inspirées de Bicky
+  ingredients?: string[];
+  isSpicy?: boolean;
+  isVegetarian?: boolean;
+  
+  // Métadonnées extensibles
+  metadata?: Record<string, unknown>;
 }
 
-export interface CartItem extends Omit<Product, 'id'> {
+export interface CartItem extends Omit<Product, 'id' | '_id'> {
   id: string; // Identifiant unique pour le panier
-  originalId: number; // ID original du produit
+  originalId?: number | string; // ID original du produit (peut être number ou string MongoDB)
   selectedOptions?: (OptionSupplement | OptionExtra | Accompagnements | Boissons)[];
   totalPrice?: number;
   quantity: number;
@@ -42,10 +52,12 @@ export interface OptionSauce {
 }
 
 export interface Category {
-  id: string;
+  id?: string; // ID optionnel pour la compatibilité avec l'ancien système
+  _id?: string; // ID MongoDB pour la compatibilité avec le nouveau système
   name: string;
   image?: string;
   description: string;
+  isActive?: boolean; // Statut actif de la catégorie
   steps?: {
       [key: string]: {
           type: "supplements" | "extra" | "accompagnements" | "boissons" | "sauces";

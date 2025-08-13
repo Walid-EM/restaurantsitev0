@@ -4,10 +4,19 @@ export interface IProduct extends mongoose.Document {
   name: string;
   description: string;
   price: number;
-  category: mongoose.Types.ObjectId;
+  category: string; // Changé de ObjectId à string
   image: string;
   isAvailable: boolean;
   extras: mongoose.Types.ObjectId[];
+  
+  // Nouvelles propriétés inspirées de Bicky
+  ingredients?: string[];
+  isSpicy?: boolean;
+  isVegetarian?: boolean;
+  
+  // Métadonnées extensibles pour futures extensions
+  metadata?: Record<string, unknown>;
+  
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,9 +38,9 @@ const productSchema = new mongoose.Schema<IProduct>({
     min: [0, 'Le prix ne peut pas être négatif'],
   },
   category: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Category',
+    type: String, // Changé de ObjectId à String
     required: [true, 'La catégorie est requise'],
+    trim: true,
   },
   image: {
     type: String,
@@ -45,6 +54,26 @@ const productSchema = new mongoose.Schema<IProduct>({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Extra',
   }],
+  
+  // Nouvelles propriétés inspirées de Bicky
+  ingredients: [{
+    type: String,
+    trim: true,
+  }],
+  isSpicy: {
+    type: Boolean,
+    default: false,
+  },
+  isVegetarian: {
+    type: Boolean,
+    default: false,
+  },
+  
+  // Métadonnées extensibles
+  metadata: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
+  },
 }, {
   timestamps: true,
 });

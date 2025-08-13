@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-export interface IExtra extends mongoose.Document {
+export interface ISupplement extends mongoose.Document {
   name: string;
   price: number;
   image: string;
@@ -9,7 +9,7 @@ export interface IExtra extends mongoose.Document {
   updatedAt: Date;
 }
 
-const extraSchema = new mongoose.Schema<IExtra>({
+const supplementSchema = new mongoose.Schema<ISupplement>({
   name: {
     type: String,
     required: [true, 'Le nom est requis'],
@@ -32,4 +32,4 @@ const extraSchema = new mongoose.Schema<IExtra>({
   timestamps: true,
 });
 
-export default mongoose.models.Extra || mongoose.model<IExtra>('Extra', extraSchema);
+export default mongoose.models.Supplement || mongoose.model<ISupplement>('Supplement', supplementSchema);
