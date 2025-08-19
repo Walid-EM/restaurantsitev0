@@ -34,3 +34,10 @@ export const adminApiDelete = (url: string) =>
   adminApiCall(url, {
     method: 'DELETE',
   });
+
+// Fonction spécifique pour la réorganisation des catégories
+export const adminApiReorderCategories = (categoryOrders: Array<{ _id: string; order: number }>) => 
+  adminApiCall('/api/admin/categories/reorder', {
+    method: 'POST',
+    body: JSON.stringify({ categoryOrders }),
+  });

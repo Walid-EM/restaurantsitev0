@@ -5,6 +5,9 @@ export interface ICategory extends mongoose.Document {
   description: string;
   image: string;
   isActive: boolean;
+  // Options configurables pour cette catégorie
+  allowedOptions: string[];
+  order: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -28,6 +31,16 @@ const categorySchema = new mongoose.Schema<ICategory>({
   isActive: {
     type: Boolean,
     default: true,
+  },
+  allowedOptions: {
+    type: [String],
+    default: [],
+    enum: ['supplements', 'sauces', 'extras', 'accompagnements', 'boissons'],
+  },
+  order: {
+    type: Number,
+    default: 0,
+    min: 0,
   },
 }, {
   timestamps: true,

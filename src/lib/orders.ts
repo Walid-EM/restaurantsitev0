@@ -63,20 +63,49 @@ export async function createOrder(orderData: Omit<Order, '_id' | 'orderDate'>): 
 
 export async function getOrders(): Promise<Order[]> {
   try {
+    console.log('🔄 Connexion à MongoDB pour récupérer les commandes...');
     await connectDB();
-    const db = (global as GlobalWithMongoose).mongoose?.connection.db;
-    if (!db) throw new Error('Base de données non connectée');
     
+    const db = (global as GlobalWithMongoose).mongoose?.connection.db;
+    if (!db) {
+      console.log('❌ Base de données non connectée');
+      throw new Error('Base de données non connectée');
+    }
+    
+    console.log('✅ Connexion MongoDB établie');
+    
+    console.log('📊 Tentative de récupération des commandes...');
     const ordersCollection = db.collection("orders");
     
-    const orders = await ordersCollection
-      .find({})
-      .sort({ orderDate: -1 })
-      .toArray();
+    try {
+      const orders = await ordersCollection
+        .find({})
+        .sort({ orderDate: -1 })
+        .toArray();
+      
+      console.log(`✅ ${orders.length} commandes récupérées avec succès`);
+      return orders;
+      
+    } catch (collectionError) {
+      console.log('📝 Erreur lors de l\'accès à la collection orders:', collectionError);
+      console.log('📝 Collection orders probablement inexistante, retour d\'un tableau vide');
+      return [];
+    }
     
-    return orders;
   } catch (error) {
-    console.error('Erreur lors de la récupération des commandes:', error);
+    console.error('❌ Erreur lors de la récupération des commandes:', error);
+    
+    // Si c'est une erreur de collection inexistante, retourner un tableau vide
+    if (error instanceof Error && (
+      error.message.includes('collection') || 
+      error.message.includes('not found') ||
+      error.message.includes('does not exist') ||
+      error.message.includes('Namespace not found')
+    )) {
+      console.log('📝 Collection orders inexistante ou introuvable, retour d\'un tableau vide');
+      return [];
+    }
+    
     throw new Error('Impossible de récupérer les commandes');
   }
 }

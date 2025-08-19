@@ -76,3 +76,235 @@ body::-webkit-scrollbar {
 *::-webkit-scrollbar {
   display: none; /* Safari and Chrome */
 }
+
+/* Animation tracking-in-expand-fwd */
+@keyframes tracking-in-expand-fwd {
+  0% {
+    letter-spacing: -0.5em;
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.6;
+  }
+  100% {
+    letter-spacing: normal;
+    opacity: 1;
+  }
+}
+
+.tracking-in-expand-fwd {
+  -webkit-animation: tracking-in-expand-fwd 1.2s cubic-bezier(0.215, 0.610, 0.355, 1.000) both;
+  animation: tracking-in-expand-fwd 1.2s cubic-bezier(0.215, 0.610, 0.355, 1.000) both;
+}
+
+/* Dans votre section hero */
+section[data-section="hero"] {
+  perspective: 1000px;
+  perspective-origin: center;
+}
+
+/* Animation focus-in-contract-bck */
+@keyframes focus-in-contract-bck {
+  0% {
+    letter-spacing: 1em;
+    -webkit-transform: translateZ(200px);
+    transform: translateZ(200px);
+    -webkit-filter: blur(12px);
+    filter: blur(12px);
+    opacity: 0;
+  }
+  100% {
+    -webkit-transform: translateZ(20px);
+    transform: translateZ(20px);
+    -webkit-filter: blur(0);
+    filter: blur(0);
+    opacity: 1;
+  }
+}
+
+.focus-in-contract-bck {
+  -webkit-animation: focus-in-contract-bck 1.2s cubic-bezier(0.020, 0.460, 0.450, 0.950) both;
+  animation: focus-in-contract-bck 1.2s cubic-bezier(0.020, 0.460, 0.450, 0.950) both;
+}
+
+/* Animation scale-in-hor-right */
+@keyframes scale-in-hor-right {
+  0% {
+    -webkit-transform: scaleX(0);
+    transform: scaleX(0);
+    -webkit-transform-origin: 100% 100%;
+    transform-origin: 100% 100%;
+    opacity: 1;
+  }
+  100% {
+    -webkit-transform: scaleX(1);
+    transform: scaleX(1);
+    -webkit-transform-origin: 100% 100%;
+    transform-origin: 100% 100%;
+    opacity: 1;
+  }
+}
+.scale-in-hor-right {
+  animation: scale-in-hor-right 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+
+/* Animation scale-in-hor-right */
+@keyframes slide-in-left {
+  0% {
+    transform: translateX(-500px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.slide-in-left {
+  animation: slide-in-left 0.8s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+
+@keyframes slide-in-right {
+  0% {
+    transform: translateX(500px);
+    opacity: 0;
+  }
+  100% {
+
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.slide-in-right {
+	animation: slide-in-right 0.8s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+/* Animation fade-in-up pour les éléments au scroll */
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fade-in-up 0.8s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+/* Animation scale-in pour les éléments au scroll */
+@keyframes scale-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.scale-in {
+  animation: scale-in 0.6s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+/* Animation slide-in-bottom pour les éléments au scroll */
+@keyframes slide-in-bottom {
+  0% {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in-bottom {
+  animation: slide-in-bottom 0.8s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+/* Classes pour les animations au scroll */
+[data-animate] {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.250, 0.460, 0.450, 0.940);
+}
+
+[data-animate].animate-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Animations spécifiques selon l'attribut data-animate */
+[data-animate="fade-in-up"].animate-in {
+  animation: fade-in-up 0.8s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+[data-animate="scale-in"].animate-in {
+  animation: scale-in 0.6s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+[data-animate="slide-in-bottom"].animate-in {
+  animation: slide-in-bottom 0.8s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+/* Délais progressifs pour les éléments d'une même section */
+[data-animate]:nth-child(1).animate-in { animation-delay: 0.1s; }
+[data-animate]:nth-child(2).animate-in { animation-delay: 0.2s; }
+[data-animate]:nth-child(3).animate-in { animation-delay: 0.3s; }
+[data-animate]:nth-child(4).animate-in { animation-delay: 0.4s; }
+[data-animate]:nth-child(5).animate-in { animation-delay: 0.5s; }
+
+/* Délais spécifiques pour la grille des stats */
+[data-section="stats"] [data-animate]:nth-child(1).animate-in { animation-delay: 0.1s; }
+[data-section="stats"] [data-animate]:nth-child(2).animate-in { animation-delay: 0.3s; }
+[data-section="stats"] [data-animate]:nth-child(3).animate-in { animation-delay: 0.5s; }
+
+/* Délais spécifiques pour la grille de philosophie */
+[data-section="philosophy"] [data-animate]:nth-child(1).animate-in { animation-delay: 0.2s; }
+[data-section="philosophy"] [data-animate]:nth-child(2).animate-in { animation-delay: 0.4s; }
+[data-section="philosophy"] [data-animate]:nth-child(3).animate-in { animation-delay: 0.6s; }
+
+/* Effet de parallaxe pour les éléments de fond */
+.parallax-bg {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Animation de pulsation pour les éléments interactifs */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(251, 191, 36, 0.6);
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Animation de rebond pour les éléments au hover */
+@keyframes bounce-in {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.bounce-in-hover:hover {
+  animation: bounce-in 0.6s ease-in-out;
+}

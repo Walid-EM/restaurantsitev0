@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CartItem, OptionSupplement, OptionExtra, Accompagnements, Boissons, OptionSauce } from "../types";
 import { useCart } from "../CartProvider";
 import PaymentModal from "../components/PaymentModal";
+// Pas d'imports de composants de scroll pour le moment
 
 // Types pour les données dynamiques
 interface DynamicProduct {
@@ -23,6 +24,8 @@ interface DynamicCategory {
   description?: string;
   image: string;
   isActive: boolean;
+  order?: number;
+  createdAt?: Date;
   steps?: {
     supplements?: {
       type: "supplements";
@@ -53,11 +56,11 @@ interface DynamicCategory {
 }
 
 export default function CommandePage() {
-  const [activeCategory, setActiveCategory] = useState("assiette");
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const [activeCategory, setActiveCategory] = useState("");
+  
+
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
-  const [isScrolling, setIsScrolling] = useState(false);
-  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<DynamicProduct | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCartDialogOpen, setIsCartDialogOpen] = useState(false);
@@ -98,6 +101,7 @@ export default function CommandePage() {
   const [isLoading, setIsLoading] = useState(true);
   
   const categoriesRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
   const { cartItems, addToCart, updateQuantity, calculateTotal } = useCart();
 
   // Fonction pour récupérer les données dynamiquement
@@ -126,7 +130,27 @@ export default function CommandePage() {
       if (categoriesRes.ok) {
         const categoriesData = await categoriesRes.json();
         if (categoriesData.success && Array.isArray(categoriesData.categories)) {
-          setDynamicCategories(categoriesData.categories);
+          // Trier les catégories selon leur ordre dans la base de données
+          const sortedCategories = categoriesData.categories.sort((a: DynamicCategory, b: DynamicCategory) => {
+            // Si les deux ont un ordre valide, trier par ordre
+            if (a.order && b.order) {
+              return a.order - b.order;
+            }
+            // Si une seule a un ordre, la mettre en premier
+            if (a.order && !b.order) return -1;
+            if (!a.order && b.order) return 1;
+            // Si aucune n'a d'ordre, trier par createdAt
+            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return dateA - dateB;
+          });
+          
+          setDynamicCategories(sortedCategories);
+          
+          // Initialiser activeCategory avec la première catégorie réelle
+          if (sortedCategories.length > 0 && activeCategory === "") {
+            setActiveCategory(sortedCategories[0]._id);
+          }
         }
       }
 
@@ -176,9 +200,26 @@ export default function CommandePage() {
 
 
 
+  // Fonction pour charger les options de catégories
+  const fetchCategoryOptions = async () => {
+    try {
+      const response = await fetch('/api/categories/options');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.categoryOptionsMap) {
+          setCategoryOptionsMap(data.categoryOptionsMap);
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des options de catégories:', error);
+      // Les valeurs par défaut sont déjà définies dans l'état initial
+    }
+  };
+
   // Charger les données au montage du composant
   useEffect(() => {
     fetchDynamicData();
+    fetchCategoryOptions();
   }, []);
 
   // Fonction pour gérer la diminution de quantité avec confirmation
@@ -206,18 +247,20 @@ export default function CommandePage() {
     setIsDeleteDialogOpen(false);
   };
 
+  // État pour stocker les options de catégories depuis la base de données
+  const [categoryOptionsMap, setCategoryOptionsMap] = useState<{ [key: string]: string[] }>({
+    // Valeurs par défaut en cas d'erreur de chargement
+    'assiette': ['supplements', 'sauces', 'extras', 'accompagnements', 'boissons'],
+    'sandwich': ['supplements', 'sauces', 'extras', 'accompagnements', 'boissons'],
+    'tacos': ['supplements', 'sauces', 'extras', 'accompagnements', 'boissons'],
+    'bicky': ['supplements', 'sauces', 'extras'],
+    'snacks': ['sauces'],
+    'dessert': [],
+    'boissons': []
+  });
+
   // Fonction pour récupérer les options d'une catégorie depuis les données dynamiques
   const getCategoryOptions = (categoryName: string) => {
-    // Mapper les noms de catégories aux types d'options appropriés
-    const categoryOptionsMap: { [key: string]: string[] } = {
-      'assiette': ['supplements', 'sauces', 'extras', 'accompagnements', 'boissons'],
-      'sandwich': ['supplements', 'sauces', 'extras', 'accompagnements', 'boissons'],
-      'tacos': ['supplements', 'sauces', 'extras', 'accompagnements', 'boissons'],
-      'Bicky': ['supplements', 'sauces', 'extras'],
-      'snacks': ['sauces'],
-      'dessert': ['sauces'],
-      'boissons': []
-    };
 
     const optionsForCategory = categoryOptionsMap[categoryName.toLowerCase()] || [];
     
@@ -234,7 +277,16 @@ export default function CommandePage() {
     if (typeof window !== 'undefined') {
       const element = document.getElementById(categoryId);
       if (element) {
-        element.scrollIntoView({ behavior: "smooth" });
+        const headerHeight = isScrolled ? 80 : 100; // Hauteur variable du header
+        const additionalOffset = 20; // Petit espace supplémentaire
+        const elementPosition = element.offsetTop - headerHeight - additionalOffset;
+        
+        window.scrollTo({
+          top: Math.max(0, elementPosition),
+          behavior: 'smooth'
+        });
+        
+        // Mise à jour manuelle de l'état actif pour éviter le délai de l'Intersection Observer
         setActiveCategory(categoryId);
       }
     }
@@ -417,98 +469,163 @@ export default function CommandePage() {
     };
   }, [isModalOpen]);
 
-  // Observer pour détecter la section active
+  // Fonction simple pour changer de catégorie
+  const handleCategoryClick = (categoryId: string) => {
+    setActiveCategory(categoryId);
+    scrollToSection(categoryId);
+  };
+
+  // Gestion du scroll avec scroll spy
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveCategory(entry.target.id);
-          }
-        });
-      },
-      { threshold: 0.3 }
-    );
-
-    dynamicCategories.forEach((category) => {
-      const element = document.getElementById(category._id);
-      if (element) {
-        observer.observe(element);
-      }
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
-  // Scroll automatique vers la catégorie active dans le header mobile
-  useEffect(() => {
-    if (categoriesRef.current && activeCategory) {
-      const activeButton = categoriesRef.current.querySelector(`[data-category="${activeCategory}"]`) as HTMLElement;
-      if (activeButton) {
-        const container = categoriesRef.current;
-        const buttonLeft = activeButton.offsetLeft;
-        const buttonWidth = activeButton.offsetWidth;
-        const containerWidth = container.offsetWidth;
-        const containerScrollLeft = container.scrollLeft;
-
-        // Vérifier si le bouton est visible
-        const isVisible = buttonLeft >= containerScrollLeft && 
-        buttonLeft + buttonWidth <= containerScrollLeft + containerWidth;
-
-        if (!isVisible) {
-          // Centrer le bouton actif dans le container instantanément
-          const targetScrollLeft = buttonLeft - (containerWidth / 2) + (buttonWidth / 2);
-          container.scrollLeft = targetScrollLeft;
-        }
-      }
-    }
-  }, [activeCategory, dynamicCategories]);
-
-  // Gestion du scroll pour le scroll horizontal
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
+      setIsScrolled(currentScrollY > 50);
       
-      // Éviter les changements trop fréquents
-      if (Math.abs(currentScrollY - lastScrollY) < 10) {
-        return;
-      }
-
-      setLastScrollY(currentScrollY);
-      setIsScrolling(true);
-
-      // Gestion de la visibilité du header principal - visible SEULEMENT quand on est tout en haut
+      // Gestion de la visibilité du header sur mobile
       if (currentScrollY <= 10) {
-        // Très proche du sommet (≤ 10px) - header principal visible
         setIsHeaderVisible(true);
       } else {
-        // Dès qu'on scrolle un peu - masquer le header principal
         setIsHeaderVisible(false);
       }
-
-      // Scroll horizontal automatique des catégories - plus rapide
-      if (categoriesRef.current) {
-        const scrollDirection = currentScrollY > lastScrollY ? 1 : -1;
-        const scrollAmount = scrollDirection * 4; // Vitesse de scroll augmentée
-        categoriesRef.current.scrollLeft += scrollAmount;
-      }
-
-      // Arrêter l'état de scroll après un délai
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-      scrollTimeoutRef.current = setTimeout(() => {
-        setIsScrolling(false);
-      }, 150);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
+  }, []);
+
+  // Scroll Spy avec Intersection Observer - attendre le rendu
+  useEffect(() => {
+    if (dynamicCategories.length === 0 || isLoading) return;
+
+    // Attendre que le DOM soit prêt
+    const setupObserver = () => {
+      // Cleanup l'ancien observer s'il existe
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+
+      const observerOptions = {
+        root: null,
+        rootMargin: '-80px 0px -50% 0px', // Offset pour le header fixe
+        threshold: [0, 0.25, 0.5, 0.75, 1]
+      };
+
+      const observerCallback = (entries: IntersectionObserverEntry[]) => {
+        let mostVisibleEntry: IntersectionObserverEntry | null = null;
+        let maxVisibilityRatio = 0;
+
+        entries.forEach((entry: IntersectionObserverEntry) => {
+          if (entry.isIntersecting && entry.intersectionRatio > maxVisibilityRatio) {
+            maxVisibilityRatio = entry.intersectionRatio;
+            mostVisibleEntry = entry;
+          }
+        });
+
+        if (mostVisibleEntry) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const target = (mostVisibleEntry as any).target as HTMLElement;
+          const sectionId = target.id;
+          if (sectionId && sectionId !== activeCategory) {
+            setActiveCategory(sectionId);
+          }
+        }
+      };
+
+      const observer = new IntersectionObserver(observerCallback, observerOptions);
+      observerRef.current = observer;
+
+      // Observer toutes les sections
+      dynamicCategories.forEach((category) => {
+        const element = document.getElementById(category._id);
+        if (element) {
+          observer.observe(element);
+        }
+      });
+    };
+
+    // Attendre un peu que le DOM soit rendu
+    const timer = setTimeout(() => {
+      setupObserver();
+      
+      // Forcer la détection initiale de la section visible
+      if (dynamicCategories.length > 0 && activeCategory) {
+        const currentSectionElement = document.getElementById(activeCategory);
+        if (currentSectionElement) {
+          const rect = currentSectionElement.getBoundingClientRect();
+          // Si la section est visible dans la viewport, la marquer comme active
+          if (rect.top <= window.innerHeight && rect.bottom >= 0) {
+            // La section est visible, pas besoin de changer
+            return;
+          }
+        }
+        
+        // Sinon, trouver quelle section est réellement visible
+        let mostVisibleSection = null;
+        let maxVisibility = 0;
+        
+        dynamicCategories.forEach((category) => {
+          const element = document.getElementById(category._id);
+          if (element) {
+            const rect = element.getBoundingClientRect();
+            const headerHeight = 160; // Hauteur approximative des headers
+            const visibleTop = Math.max(0, headerHeight - rect.top);
+            const visibleBottom = Math.min(window.innerHeight, rect.bottom - headerHeight);
+            const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+            
+            if (visibleHeight > maxVisibility) {
+              maxVisibility = visibleHeight;
+              mostVisibleSection = category._id;
+            }
+          }
+        });
+        
+        if (mostVisibleSection && mostVisibleSection !== activeCategory) {
+          setActiveCategory(mostVisibleSection);
+        }
+      }
+    }, 300); // 300ms pour s'assurer que les sections sont rendues
+
+    return () => {
+      clearTimeout(timer);
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [dynamicCategories, isLoading]); // Ajouter isLoading pour attendre la fin du chargement
+
+  // Auto-scroll mobile pour centrer l'élément actif
+  useEffect(() => {
+    if (!categoriesRef.current || !activeCategory) return;
+
+    const scrollToActiveButton = () => {
+      const container = categoriesRef.current;
+      if (!container) return;
+
+      const activeButton = container.querySelector(`button[data-category="${activeCategory}"]`) as HTMLElement;
+      
+      if (activeButton) {
+        const containerRect = container.getBoundingClientRect();
+        const buttonRect = activeButton.getBoundingClientRect();
+        
+        const scrollLeft = container.scrollLeft;
+        const buttonLeft = buttonRect.left - containerRect.left + scrollLeft;
+        const buttonCenter = buttonLeft + buttonRect.width / 2;
+        const containerCenter = containerRect.width / 2;
+        
+        const targetScrollLeft = buttonCenter - containerCenter;
+        
+        container.scrollTo({
+          left: Math.max(0, Math.min(targetScrollLeft, container.scrollWidth - container.offsetWidth)),
+          behavior: 'smooth'
+        });
+      }
+    };
+
+    // Petit délai pour s'assurer que l'élément est rendu
+    const timer = setTimeout(scrollToActiveButton, 50);
+    
+    return () => clearTimeout(timer);
+  }, [activeCategory]);
 
   return (
     <div className="min-h-screen text-white">
@@ -532,107 +649,140 @@ export default function CommandePage() {
 
       {/* Contenu principal qui prend tout l'écran */}
       <div className={`relative z-30 min-h-screen overflow-y-auto flex flex-col md:pt-0 ${isHeaderVisible ? 'pt-15' : 'pt-0'}`}>
-        {/* Header avec navigation - Visible sur mobile avec logique de scroll */}
-        <header className={`${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'} md:translate-y-0 transition-transform ease-out bg-black/60 backdrop-blur-sm border-b border-gray-600/50 text-white fixed top-0 left-0 right-0 z-50 shadow-2xl`}>
-          <div className="flex items-center h-20 w-full px-6 relative">
+        {/* Header moderne et adaptatif */}
+        <header className={`${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'} md:translate-y-0 transition-all ease-out ${
+          isScrolled 
+            ? 'bg-gradient-to-r from-black/60 via-gray-900/70 to-black/60 backdrop-blur-xl border-b border-white/20' 
+            : 'bg-gradient-to-r from-black/30 via-gray-900/40 to-black/30 backdrop-blur-xl border-b border-white/10'
+        } text-white fixed top-0 left-0 right-0 z-50 shadow-lg duration-300`}>
+                     <div className={`flex items-center w-full px-8 transition-all duration-300 ${
+             isScrolled ? 'h-16' : 'h-20'
+           }`}>
 
-            {/* Logo + Titre */}
+            {/* Logo à gauche */}
             <div className="flex-shrink-0">
               <Link href="/">
-                <button className="flex items-center space-x-3 focus:outline-none hover:scale-105 transition-all duration-200 group">
-                  <div className="relative">
-                    <Image
-                      src="/cheeseburger.png"
-                      alt="Cheeseburger Logo"
-                      width={40}
-                      height={40}
-                      className="w-10 h-10"
-                    />
-                    <div className="absolute inset-0 bg-yellow-400/20 rounded-full blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-                  </div>
-                  <h1 className="text-xl xl:text-3xl font-bold text-white hover:text-yellow-400 transition-colors duration-300">
-                    Delice Wand
+                <button className="focus:outline-none group px-6 py-4 rounded-xl hover:bg-white/5 transition-all duration-300">
+                  <h1 className={`font-light text-white tracking-[0.2em] group-hover:text-yellow-400 transition-all duration-300 ${
+                    isScrolled ? 'text-xl xl:text-2xl' : 'text-2xl xl:text-3xl'
+                  }`}>
+                    DELICE <span className="font-thin italic text-yellow-400">WAND</span>
                   </h1>
                 </button>
               </Link>
             </div>
 
-            {/* Navigation + Bouton Commander à droite */}
-            <div className="flex items-center space-x-6 xl:ml-auto">
-              {/* Menu de navigation - Desktop */}
-              <nav className="hidden xl:flex items-center space-x-2">
-                {dynamicCategories.map((category) => (
-                  <button
-                    key={category._id}
-                    onClick={() => scrollToSection(category._id)}
-                    className={`whitespace-nowrap px-4 py-3 text-sm font-medium transition-all duration-300 relative rounded-xl hover:bg-white/5 ${
-                      activeCategory === category._id
-                        ? "text-white bg-white/10"
-                        : "text-gray-300 hover:text-white"
+            {/* Navigation desktop avec scroll spy */}
+            <nav className="hidden xl:flex items-center space-x-2 ml-12">
+              {dynamicCategories.map((category) => (
+                <button
+                  key={category._id}
+                  onClick={() => handleCategoryClick(category._id)}
+                  className={`relative px-5 py-3 text-sm font-medium tracking-wide transition-all duration-300 ease-out rounded-lg group ${
+                    activeCategory === category._id
+                      ? "text-yellow-400 bg-yellow-400/15 shadow-lg shadow-yellow-400/25"
+                      : "text-gray-300 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  <span className="relative z-10">{category.name}</span>
+                  
+                  {/* Indicateur actif - border bottom */}
+                  <div 
+                    className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 h-0.5 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full transition-all duration-300 ease-out ${
+                      activeCategory === category._id 
+                        ? "w-3/4 opacity-100" 
+                        : "w-0 opacity-0 group-hover:w-1/2 group-hover:opacity-50"
                     }`}
-                  >
-                    <span className="relative z-10">{category.name}</span>
-                    {activeCategory === category._id && (
-                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-in slide-in-from-left duration-300" />
-                    )}
-                  </button>
-                ))}
-              </nav>
+                  />
+                  
+                  {/* Effet de glow pour l'élément actif */}
+                  {activeCategory === category._id && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-orange-500/20 rounded-lg blur-sm -z-10 animate-pulse" />
+                  )}
+                </button>
+              ))}
+            </nav>
 
-
-
-              {/* Bouton Commander - Desktop seulement */}
+            {/* Bouton Commander agrandi - Complètement à droite */}
+            <div className="flex items-center ml-auto space-x-4">
+              {/* Bouton Commander - Desktop adaptatif */}
               <button 
                 onClick={() => setIsCartDialogOpen(true)}
-                className="hidden md:block relative group bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 hover:from-yellow-500 hover:via-orange-500 hover:to-red-500 text-black font-bold py-3 xl:py-4 px-6 xl:px-10 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/50 focus:outline-none text-sm xl:text-base overflow-hidden tracking-wide"
-                style={{ fontFamily: "'Inter', 'Segoe UI', 'Roboto', sans-serif" }}
+                className={`hidden md:block bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold tracking-wider uppercase hover:from-yellow-500 hover:to-yellow-600 transition-all duration-300 rounded-2xl shadow-xl hover:shadow-yellow-400/30 transform hover:scale-105 ${
+                  isScrolled ? 'px-10 py-3 text-sm' : 'px-12 py-4 text-base'
+                }`}
                 disabled={cartItems.length === 0}
               >
                 <span className="relative z-10 flex items-center">
-                  <span className="font-semibold">COMMANDER</span>
+                  <span className="font-semibold">Commander Maintenant</span>
                   {cartItems.length > 0 && (
                     <span className="flex absolute -top-3 -right-8 text-black text-sm font-bold rounded-full h-6 w-6 items-center justify-center animate-pulse">
                       {cartItems.length}
                     </span>
                   )}
                 </span>
-                <div className="absolute inset-0 bg-white/20 translate-x-full group-hover:translate-x-0 transition-transform duration-500 skew-x-12"></div>
               </button>
             </div>
           </div>
         </header>
 
-        {/* Header mobile avec catégories - Se place en dessous du header principal quand il est visible */}
-        <header className={`md:hidden fixed left-0 right-0 bg-black/95 backdrop-blur-sm z-50 border-b border-gray-700 shadow-lg transition-transform duration-300 ease-out`} style={{ transform: `translateY(${isHeaderVisible ? '80px' : '0px'})` }}>
-          <div className="px-4 py-3">
-            <div 
-              ref={categoriesRef}
-              className="flex space-x-4 overflow-x-auto scrollbar-hide"
-              style={{ 
-                scrollbarWidth: 'none', 
-                msOverflowStyle: 'none'
-              }}
-            >
-              {dynamicCategories.map((category) => (
-                <button
-                  key={category._id}
-                  data-category={category._id}
-                  onClick={() => scrollToSection(category._id)}
-                  className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-150 whitespace-nowrap ${
-                    activeCategory === category._id
-                      ? "bg-gradient-to-r from-red-500 to-yellow-500 text-white shadow-lg"
-                      : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                  }`}
-                >
-                  {category.name}
-                </button>
-              ))}
+        {/* Header mobile avec style similaire au desktop */}
+        <header className={`md:hidden fixed left-0 right-0 z-50 transition-all duration-300 ease-out ${
+          isHeaderVisible 
+            ? 'translate-y-0' 
+            : '-translate-y-full'
+        } ${
+          isScrolled 
+            ? 'bg-gradient-to-r from-black/85 via-gray-900/90 to-black/85 backdrop-blur-xl border-b border-white/20' 
+            : 'bg-gradient-to-r from-black/80 via-gray-900/85 to-black/80 backdrop-blur-lg border-b border-white/15'
+        } shadow-lg`} style={{ top: isScrolled ? '64px' : '80px' }}>
+          
+          <div className="px-4">
+            {/* Navigation mobile avec style desktop */}
+            <div className="relative">
+              {/* Indicateurs de défilement */}
+              <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-black/60 to-transparent pointer-events-none z-10" />
+              <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-black/60 to-transparent pointer-events-none z-10" />
+              
+              <nav 
+                ref={categoriesRef}
+                className="flex items-center space-x-2 overflow-x-auto [&::-webkit-scrollbar]:hidden scroll-smooth px-4 py-3"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                {dynamicCategories.map((category) => (
+                  <button
+                    key={category._id}
+                    data-category={category._id}
+                    onClick={() => handleCategoryClick(category._id)}
+                    className={`relative px-4 py-2.5 text-sm font-medium tracking-wide transition-all duration-300 ease-out rounded-lg group whitespace-nowrap flex-shrink-0 ${
+                      activeCategory === category._id
+                        ? "text-yellow-400 bg-yellow-400/15 shadow-lg shadow-yellow-400/25"
+                        : "text-gray-300 hover:text-white hover:bg-white/10"
+                    }`}
+                  >
+                    <span className="relative z-10">{category.name}</span>
+                    
+                    {/* Indicateur actif - border bottom comme desktop */}
+                    <div 
+                      className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 h-0.5 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full transition-all duration-300 ease-out ${
+                        activeCategory === category._id 
+                          ? "w-3/4 opacity-100" 
+                          : "w-0 opacity-0 group-hover:w-1/2 group-hover:opacity-50"
+                      }`}
+                    />
+                    
+                    {/* Effet de glow pour l'élément actif comme desktop */}
+                    {activeCategory === category._id && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-orange-500/20 rounded-lg blur-sm -z-10 animate-pulse" />
+                    )}
+                  </button>
+                ))}
+              </nav>
             </div>
           </div>
         </header>
 
         {/* Contenu principal modernisé */}
-        <main className={`${isHeaderVisible ? 'pt-32' : 'pt-20'} md:pt-20 pb-20 bg-gradient-to-br from-gray-900/80 via-gray-800/80 to-gray-900/80 backdrop-blur-sm ${isScrolling ? 'transition-none' : 'transition-all duration-500 ease-out'} relative z-20`}>
+        <main className={`${isHeaderVisible ? (isScrolled ? 'pt-26' : 'pt-32') : (isScrolled ? 'pt-14' : 'pt-20')} pb-20 bg-gradient-to-br from-gray-900/80 via-gray-800/80 to-gray-900/80 backdrop-blur-sm transition-all duration-300 ease-out relative z-20`}>
           
           {/* Indicateur de chargement */}
           {isLoading && (

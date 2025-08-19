@@ -43,6 +43,8 @@ interface Extra {
 export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activePage, setActivePage] = useState('home');
+  const [currentSection, setCurrentSection] = useState('hero');
+  const [isScrolled, setIsScrolled] = useState(false);
   
   // États pour les données de la base
   const [categories, setCategories] = useState<Category[]>([]);
@@ -71,16 +73,9 @@ export default function Home() {
           // Séparer les produits classiques des Bicky
           const allProducts = unifiedData.products;
           const regularProducts = allProducts.filter((p: Product) => p.category !== 'bicky');
-          const bickyProducts = allProducts.filter((p: Product) => p.category === 'bicky');
           
           setProducts(regularProducts);
-          setBickies(bickyProducts); // Les produits Bicky sont maintenant des Products avec les bonnes propriétés
-          
-          console.log('✅ Données unifiées:', {
-            total: allProducts.length,
-            regular: regularProducts.length,
-            bicky: bickyProducts.length
-          });
+          ;
         }
       }
       
@@ -101,6 +96,74 @@ export default function Home() {
   // Charger les données au montage du composant
   useEffect(() => {
     fetchData();
+  }, []);
+
+  // Détection du scroll et des sections avec animations
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      setIsScrolled(scrollPosition > 50);
+
+      // Détecter la section active basée sur la position de scroll
+      const sections = [
+        { id: 'hero', element: document.querySelector('[data-section="hero"]') },
+        { id: 'stats', element: document.querySelector('[data-section="stats"]') },
+        { id: 'philosophy', element: document.querySelector('[data-section="philosophy"]') },
+        { id: 'cta', element: document.querySelector('[data-section="cta"]') }
+      ];
+
+      for (const section of sections) {
+        if (section.element) {
+          const rect = section.element.getBoundingClientRect();
+          const elementTop = rect.top + window.scrollY;
+          const elementBottom = elementTop + rect.height;
+          
+          // Si la section occupe au moins 30% de la hauteur visible
+          if (scrollPosition >= elementTop - 200 && scrollPosition < elementBottom - 200) {
+            setCurrentSection(section.id);
+            
+            // Déclencher les animations d'apparition pour cette section
+            const animatedElements = section.element.querySelectorAll('[data-animate]');
+            animatedElements.forEach((el, index) => {
+              const delay = index * 0.2; // Délai progressif
+              setTimeout(() => {
+                el.classList.add('animate-in');
+              }, delay * 1000);
+            });
+            
+            break;
+          }
+        }
+      }
+
+      // Animation des éléments au scroll
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -100px 0px'
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-in');
+          }
+        });
+      }, observerOptions);
+
+      // Observer tous les éléments avec data-animate
+      document.querySelectorAll('[data-animate]').forEach((el) => {
+        observer.observe(el);
+      });
+
+      return () => observer.disconnect();
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Appel initial
+
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const toggleMobileMenu = () => {
@@ -130,165 +193,193 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header avec navigation */}
-      <header className="bg-black/60 backdrop-blur-sm border-b border-gray-600/50 text-white fixed top-0 left-0 right-0 z-50 shadow-2xl">
-        <div className="flex items-center h-20 w-full px-6">
+      {/* Header moderne et subtil */}
+      <header className={`${
+        isScrolled 
+          ? 'bg-gradient-to-r from-black/60 via-gray-900/70 to-black/60 backdrop-blur-xl border-b border-white/20' 
+          : 'bg-gradient-to-r from-black/30 via-gray-900/40 to-black/30 backdrop-blur-xl border-b border-white/10'
+      } text-white fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out shadow-lg`}>
+        
+        <div className={`flex items-center w-full px-8 transition-all duration-300 ${
+          isScrolled ? 'h-18' : 'h-20'
+        }`}>
 
-            {/* Menu hamburger - Mobile seulement, tout à gauche */}
-            <button 
-              onClick={toggleMobileMenu}
-              className="xl:hidden text-white p-3 focus:outline-none hover:bg-white/10 rounded-xl transition-all duration-200"
-              aria-label="Menu"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-
-            {/* Logo + Titre (centré sur mobile, à gauche sur desktop) */}
+            {/* Logo à gauche */}
             <div className="flex-shrink-0">
               <button 
-                onClick={() => setActivePage('home')}
-                className="flex items-center space-x-3 focus:outline-none hover:scale-105 transition-all duration-200 group"
+                onClick={() => {
+                  setActivePage('home');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="focus:outline-none group px-6 py-4 rounded-xl hover:bg-white/5 transition-all duration-300"
               >
-                <div className="relative">
-                  <Image
-                    src="/cheeseburger.png"
-                    alt="Cheeseburger Logo"
-                    width={40}
-                    height={40}
-                    className="w-10 h-10"
-                  />
-                  <div className="absolute inset-0 bg-yellow-400/20 rounded-full blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-                </div>
-                <h1 className="text-xl xl:text-3xl font-bold text-white hover:text-yellow-400 transition-colors duration-300">
-                  Delice Wand
+                <h1 className={`font-light text-white tracking-[0.2em] group-hover:text-yellow-400 transition-all duration-300 ${
+                  isScrolled ? 'text-xl xl:text-2xl' : 'text-2xl xl:text-3xl'
+                }`}>
+                  DELICE <span className="font-thin italic text-yellow-400">WAND</span>
                 </h1>
               </button>
             </div>
 
-            {/* Navigation + Bouton Commander à droite */}
-            <div className="flex items-center space-x-6 xl:ml-auto">
-              {/* Menu de navigation - Desktop */}
-              <nav className="hidden xl:flex items-center space-x-2">
+            {/* Navigation desktop à droite du logo */}
+            <nav className="hidden xl:flex items-center space-x-6 ml-12">
               <button 
                 onClick={() => setActivePage('restaurant')}
-                className={`whitespace-nowrap px-4 py-3 text-sm font-medium transition-all duration-300 relative rounded-xl hover:bg-white/5 ${
-                  activePage === 'restaurant' ? 'text-white bg-white/10' : 'text-gray-300 hover:text-white'
+                className={`px-4 py-3 text-sm font-light tracking-wide transition-all duration-300 relative rounded-lg hover:bg-white/10 ${
+                  activePage === 'restaurant' ? 'text-yellow-400 bg-yellow-400/10' : 'text-gray-300 hover:text-white'
                 }`}
               >
-                <span className="relative z-10">Notre Restaurant</span>
+                Restaurant
                 {activePage === 'restaurant' && (
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-in slide-in-from-left duration-300" />
+                  <div className="absolute -bottom-1 left-2 right-2 h-0.5 bg-yellow-400 rounded-full" />
                 )}
               </button>
               <button 
                 onClick={() => setActivePage('carte')}
-                className={`whitespace-nowrap px-4 py-3 text-sm font-medium transition-all duration-300 relative rounded-xl hover:bg-white/5 ${
-                  activePage === 'carte' ? 'text-white bg-white/10' : 'text-gray-300 hover:text-white'
+                className={`px-4 py-3 text-sm font-light tracking-wide transition-all duration-300 relative rounded-lg hover:bg-white/10 ${
+                  activePage === 'carte' ? 'text-yellow-400 bg-yellow-400/10' : 'text-gray-300 hover:text-white'
                 }`}
               >
-                <span className="relative z-10">La Carte</span>
+                Carte
                 {activePage === 'carte' && (
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-in slide-in-from-left duration-300" />
+                  <div className="absolute -bottom-1 left-2 right-2 h-0.5 bg-yellow-400 rounded-full" />
                 )}
               </button>
               <button 
                 onClick={() => setActivePage('localisation')}
-                className={`whitespace-nowrap px-4 py-3 text-sm font-medium transition-all duration-300 relative rounded-xl hover:bg-white/5 ${
-                  activePage === 'localisation' ? 'text-white bg-white/10' : 'text-gray-300 hover:text-white'
+                className={`px-4 py-3 text-sm font-light tracking-wide transition-all duration-300 relative rounded-lg hover:bg-white/10 ${
+                  activePage === 'localisation' ? 'text-yellow-400 bg-yellow-400/10' : 'text-gray-300 hover:text-white'
                 }`}
               >
-                <span className="relative z-10">Où nous trouver ?</span>
+                Localisation
                 {activePage === 'localisation' && (
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-in slide-in-from-left duration-300" />
+                  <div className="absolute -bottom-1 left-2 right-2 h-0.5 bg-yellow-400 rounded-full" />
                 )}
               </button>
               <button 
                 onClick={() => setActivePage('rejoindre')}
-                className={`whitespace-nowrap px-4 py-3 text-sm font-medium transition-all duration-300 relative rounded-xl hover:bg-white/5 ${
-                  activePage === 'rejoindre' ? 'text-white bg-white/10' : 'text-gray-300 hover:text-white'
+                className={`px-4 py-3 text-sm font-light tracking-wide transition-all duration-300 relative rounded-lg hover:bg-white/10 ${
+                  activePage === 'rejoindre' ? 'text-yellow-400 bg-yellow-400/10' : 'text-gray-300 hover:text-white'
                 }`}
               >
-                <span className="relative z-10">Nous Rejoindre</span>
+                Contact
                 {activePage === 'rejoindre' && (
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-in slide-in-from-left duration-300" />
+                  <div className="absolute -bottom-1 left-2 right-2 h-0.5 bg-yellow-400 rounded-full" />
                 )}
               </button>
-              </nav>
+            </nav>
 
-              {/* Bouton Commander - Desktop seulement */}
+            {/* Bouton Commander agrandi - Complètement à droite */}
+            <div className="flex items-center ml-auto space-x-4">
+              {/* Menu hamburger - Mobile */}
+              <button 
+                onClick={toggleMobileMenu}
+                className="xl:hidden text-white p-3 focus:outline-none hover:text-yellow-400 hover:bg-white/10 rounded-xl transition-all duration-300"
+                aria-label="Menu"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                </svg>
+              </button>
+
+              {/* Bouton Commander - Desktop */}
               <Link href="/Commande">
-                <button className="hidden xl:block relative group bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 hover:from-yellow-500 hover:via-orange-500 hover:to-red-500 text-black font-bold py-3 xl:py-4 px-6 xl:px-10 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/50 focus:outline-none text-sm xl:text-base overflow-hidden tracking-wide"
-                  style={{ fontFamily: "'Inter', 'Segoe UI', 'Roboto', sans-serif" }}
-                >
-                  <span className="relative z-10 flex items-center space-x-2">
-                    <span className="font-semibold">COMMANDER</span>
-                    <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </span>
-                  <div className="absolute inset-0 bg-white/20 translate-x-full group-hover:translate-x-0 transition-transform duration-500 skew-x-12"></div>
+                <button className={`hidden xl:block bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold tracking-wider uppercase hover:from-yellow-500 hover:to-yellow-600 transition-all duration-300 rounded-2xl shadow-xl hover:shadow-yellow-400/30 transform hover:scale-105 ${
+                  isScrolled ? 'px-10 py-3 text-sm' : 'px-12 py-4 text-base'
+                }`}>
+                  Commander Maintenant
                 </button>
               </Link>
             </div>
           </div>
 
-          {/* Menu mobile */}
+          {/* Menu mobile stylé - même style que desktop */}
           <div className={`xl:hidden transition-all duration-300 ${isMobileMenuOpen ? 'block' : 'hidden'}`}>
-            <div className="px-6 pt-4 pb-6 space-y-2 bg-gray-700/95 backdrop-blur-lg border-t border-gray-600/50">
-              <button 
-                onClick={() => {setActivePage('home'); setIsMobileMenuOpen(false);}}
-                className={`block w-full text-left px-4 py-3 transition-all duration-200 text-sm font-medium focus:outline-none rounded-xl ${
-                  activePage === 'home' ? 'text-white bg-yellow-400/20 border-l-4 border-yellow-400' : 'text-gray-300 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                Accueil
-              </button>
-              <button 
-                onClick={() => {setActivePage('restaurant'); setIsMobileMenuOpen(false);}}
-                className={`block w-full text-left px-4 py-3 transition-all duration-200 text-sm font-medium focus:outline-none rounded-xl ${
-                  activePage === 'restaurant' ? 'text-white bg-yellow-400/20 border-l-4 border-yellow-400' : 'text-gray-300 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                Notre Restaurant
-              </button>
-              <button 
-                onClick={() => {setActivePage('carte'); setIsMobileMenuOpen(false);}}
-                className={`block w-full text-left px-4 py-3 transition-all duration-200 text-sm font-medium focus:outline-none rounded-xl ${
-                  activePage === 'carte' ? 'text-white bg-yellow-400/20 border-l-4 border-yellow-400' : 'text-gray-300 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                Notre Menu
-              </button>
-              <button 
-                onClick={() => {setActivePage('localisation'); setIsMobileMenuOpen(false);}}
-                className={`block w-full text-left px-4 py-3 transition-all duration-200 text-sm font-medium focus:outline-none rounded-xl ${
-                  activePage === 'localisation' ? 'text-white bg-yellow-400/20 border-l-4 border-yellow-400' : 'text-gray-300 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                Où nous trouver ?
-              </button>
-              <button 
-                onClick={() => {setActivePage('rejoindre'); setIsMobileMenuOpen(false);}}
-                className={`block w-full text-left px-4 py-3 transition-all duration-200 text-sm font-medium focus:outline-none rounded-xl ${
-                  activePage === 'rejoindre' ? 'text-white bg-yellow-400/20 border-l-4 border-yellow-400' : 'text-gray-300 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                Nous Rejoindre
-              </button>
+            {/* Overlay pour fermer le menu */}
+            <div 
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+              onClick={() => setIsMobileMenuOpen(false)}
+            ></div>
+            
+            {/* Menu mobile subtil */}
+            <div className={`relative z-50 ${
+              isScrolled 
+                ? 'bg-gradient-to-r from-black/85 via-gray-900/90 to-black/85 backdrop-blur-xl border-b border-white/20' 
+                : 'bg-gradient-to-r from-black/80 via-gray-900/90 to-black/80 backdrop-blur-xl border-b border-white/20'
+            } mx-4 mt-2 rounded-2xl shadow-2xl border transition-all duration-300`}>
               
-              {/* Bouton Commander - Mobile */}
-              <Link href="/Commande">
-                <button className="w-full mt-6 bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 hover:from-yellow-500 hover:via-orange-500 hover:to-red-500 text-black font-bold py-4 px-6 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-yellow-500/50 focus:outline-none flex items-center justify-center space-x-2 tracking-wide"
-                  style={{ fontFamily: "'Inter', 'Segoe UI', 'Roboto', sans-serif" }}
+              <div className="p-6 space-y-3">
+
+                <button 
+                  onClick={() => {
+                    setActivePage('home'); 
+                    setIsMobileMenuOpen(false);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className={`block w-full text-left px-4 py-3 text-sm font-light tracking-wide transition-all duration-300 rounded-lg hover:bg-white/10 ${
+                    activePage === 'home' ? 'text-yellow-400 bg-yellow-400/10' : 'text-gray-300 hover:text-white'
+                  }`}
                 >
-                  <span className="font-semibold">COMMANDER</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
+                  Accueil
+                  {activePage === 'home' && (
+                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-yellow-400 rounded-full"></div>
+                  )}
                 </button>
-              </Link>
+                <button 
+                  onClick={() => {setActivePage('restaurant'); setIsMobileMenuOpen(false);}}
+                  className={`block w-full text-left px-4 py-3 text-sm font-light tracking-wide transition-all duration-300 rounded-lg hover:bg-white/10 relative ${
+                    activePage === 'restaurant' ? 'text-yellow-400 bg-yellow-400/10' : 'text-gray-300 hover:text-white'
+                  }`}
+                >
+                  Restaurant
+                  {activePage === 'restaurant' && (
+                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-yellow-400 rounded-full"></div>
+                  )}
+                </button>
+                <button 
+                  onClick={() => {setActivePage('carte'); setIsMobileMenuOpen(false);}}
+                  className={`block w-full text-left px-4 py-3 text-sm font-light tracking-wide transition-all duration-300 rounded-lg hover:bg-white/10 relative ${
+                    activePage === 'carte' ? 'text-yellow-400 bg-yellow-400/10' : 'text-gray-300 hover:text-white'
+                  }`}
+                >
+                  Carte
+                  {activePage === 'carte' && (
+                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-yellow-400 rounded-full"></div>
+                  )}
+                </button>
+                <button 
+                  onClick={() => {setActivePage('localisation'); setIsMobileMenuOpen(false);}}
+                  className={`block w-full text-left px-4 py-3 text-sm font-light tracking-wide transition-all duration-300 rounded-lg hover:bg-white/10 relative ${
+                    activePage === 'localisation' ? 'text-yellow-400 bg-yellow-400/10' : 'text-gray-300 hover:text-white'
+                  }`}
+                >
+                  Localisation
+                  {activePage === 'localisation' && (
+                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-yellow-400 rounded-full"></div>
+                  )}
+                </button>
+                <button 
+                  onClick={() => {setActivePage('rejoindre'); setIsMobileMenuOpen(false);}}
+                  className={`block w-full text-left px-4 py-3 text-sm font-light tracking-wide transition-all duration-300 rounded-lg hover:bg-white/10 relative ${
+                    activePage === 'rejoindre' ? 'text-yellow-400 bg-yellow-400/10' : 'text-gray-300 hover:text-white'
+                  }`}
+                >
+                  Contact
+                  {activePage === 'rejoindre' && (
+                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-yellow-400 rounded-full"></div>
+                  )}
+                </button>
+                
+                {/* Séparateur avec même style que desktop */}
+                <div className="w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent my-4"></div>
+                
+                {/* Bouton Commander - Mobile */}
+                <Link href="/Commande">
+                  <button className="w-full px-6 py-4 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold tracking-wider uppercase hover:from-yellow-500 hover:to-yellow-600 transition-all duration-300 rounded-xl shadow-lg hover:shadow-yellow-400/25 transform hover:scale-[1.02]">
+                    Commander Maintenant
+                  </button>
+                </Link>
+              </div>
             </div>
           </div>
       </header>
@@ -299,7 +390,7 @@ export default function Home() {
         {/* Image d'arrière-plan principale */}
         <div className="absolute inset-0 z-10 overflow-hidden">
           <div 
-            className="absolute w-full h-full"
+            className="absolute w-full h-full parallax-bg"
             style={{
               backgroundImage: 'url(/bgmainpage.jpg)',
               backgroundSize: 'cover',
@@ -350,156 +441,120 @@ export default function Home() {
 
       {/* Contenu principal qui prend tout l'écran */}
       <div className="relative z-30 min-h-screen overflow-y-auto flex flex-col">
-        {/* Espace pour le header */}
-        <div className="h-20 flex-shrink-0"></div>
+        {/* Espace pour le header - adaptatif */}
+        <div className={`flex-shrink-0 transition-all duration-300 ${isScrolled ? 'h-18' : 'h-20'}`}></div>
         {activePage === 'home' && (
-          <div className="flex-1 flex flex-col items-center justify-start w-full">
-            {/* Hero Section */}
-            <div className="w-full max-w-4xl px-4 sm:px-6 pt-16 sm:pt-20 pb-12 sm:pb-16 mx-auto">
-              {/* Conteneur principal avec fond semi-transparent */}
-              <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-md rounded-3xl p-8 sm:p-12 border border-gray-600/50 shadow-2xl shadow-black/50 relative overflow-hidden group">
-                {/* Éléments décoratifs en arrière-plan */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-400/20 to-orange-500/20 rounded-full blur-3xl group-hover:scale-150 transition-all duration-700"></div>
-                <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-br from-red-500/20 to-pink-500/20 rounded-full blur-2xl group-hover:scale-125 transition-all duration-700"></div>
+          <div className="flex flex-col w-full h-full">
+            {/* Hero Section - Design minimal et sobre */}
+            <section data-section="hero" className="w-full h-[75vh] md:h-[70vh] flex items-center justify-center px-6 relative">
+              <div className="max-w-5xl w-full text-center">
+                {/* Titre principal épuré */}
+                <h1 className="text-6xl sm:text-8xl lg:text-9xl font-light text-white mb-4 tracking-tight leading-none tracking-in-expand-fwd">
+                  Delice
+                  <span className=" text-yellow-400 font-thin italic">Wand</span>
+
+                </h1>
                 
-                {/* Ligne décorative en haut */}
-                <div className="w-[95%] h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto mb-8 animate-pulse"></div>
+                {/* Sous-titre minimaliste */}
+                <p className="text-lg sm:text-xl text-gray-300 mb-8 max-w-2xl mx-auto font-light leading-relaxed tracking-wide slide-in-left" style={{ animationDelay: '0.3s' }}>
+                  L&apos;art culinaire à l&apos;état pur.<br />
+                  Saveurs authentiques, expérience inoubliable.
+                </p>
                 
-                {/* Contenu principal */}
-                <div className="text-center text-white relative z-10">
-                  {/* Titre principal avec effet de gradient */}
-                  <h1 className="text-5xl sm:text-5xl md:text-7xl xl:text-7xl font-bold mb-6 sm:mb-8 drop-shadow-2xl animate-in slide-in-from-bottom duration-700 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
-                    Delice Wand
-                  </h1>
+                {/* Boutons d'action épurés */}
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                  <Link href="/Commande">
+                    <button className="group px-8 py-4 bg-white text-black font-medium tracking-wider uppercase transition-all duration-300 relative overflow-hidden slide-in-left">
+                      <span className="relative z-10">Commander</span>
+                      <div className="absolute inset-0 bg-yellow-400 transform translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
+                    </button>
+                  </Link>
                   
-                  {/* Sous-titre avec style amélioré */}
-                  <p className="text-xl sm:text-2xl xl:text-3xl font-semibold mb-8 max-w-4xl mx-auto leading-relaxed text-white drop-shadow-lg animate-in slide-in-from-bottom duration-700 delay-200">
-                    Une expérience culinaire unique qui réveille vos papilles
-                  </p>
+                  <button 
+                    onClick={() => setActivePage('carte')}
+                    className="px-8 py-4 border border-white/30 text-white font-medium tracking-wider uppercase hover:border-yellow-400 hover:text-yellow-400 transition-all duration-300 slide-in-right"
+                  >
+                    Notre Carte
+                  </button>
+                </div>
+              </div>
+              
+
+            </section>
+
+            {/* Section Stats - Layout minimaliste */}
+            <section data-section="stats" className="w-full pb-26 px-6">
+              <div className="max-w-6xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                  <div className="group" data-animate="fade-in-up">
+                    <div className="text-5xl text-yellow-400 mb-2 font-light">50+</div>
+                    <h3 className="text-xl text-white font-light tracking-wide">Créations Uniques</h3>
+                    <div className="w-16 h-px bg-gray-600 mx-auto mt-2 group-hover:bg-yellow-400 transition-colors duration-300"></div>
+                  </div>
                   
-                  {/* Description avec style cohérent */}
-                  <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 mb-12 max-w-3xl mx-auto animate-in slide-in-from-bottom duration-700 delay-300">
-                    <p className="text-base sm:text-lg leading-relaxed text-gray-200">
-                      Découvrez nos burgers artisanaux, nos accompagnements frais et nos saveurs authentiques. 
-                      Le meilleur du snack à portée de clic !
+                  <div className="group" data-animate="fade-in-up">
+                    <div className="text-5xl text-yellow-400 mb-2 font-light">4.8</div>
+                    <h3 className="text-xl text-white font-light tracking-wide">Excellence Reconnue</h3>
+                    <div className="w-16 h-px bg-gray-600 mx-auto mt-2 group-hover:bg-yellow-400 transition-colors duration-300"></div>
+                  </div>
+                  
+                  <div className="group" data-animate="fade-in-up">
+                    <div className="text-5xl text-yellow-400 mb-2 font-light">15min</div>
+                    <h3 className="text-xl text-white font-light tracking-wide">Service Express</h3>
+                    <div className="w-16 h-px bg-gray-600 mx-auto mt-2 group-hover:bg-yellow-400 transition-colors duration-300"></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Section Philosophie - Design épuré */}
+            <section data-section="philosophy" className="w-full py-16 px-6 border-t border-gray-800">
+              <div className="max-w-4xl mx-auto text-center">
+                <h2 className="text-4xl lg:text-5xl font-light text-white mb-8 tracking-tight" data-animate="slide-in-bottom">
+                  Notre <span className="text-yellow-400 italic">Philosophie</span>
+                </h2>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+                  <div className="text-center" data-animate="scale-in">
+                    <h3 className="text-xl text-white mb-3 font-light">Qualité</h3>
+                    <p className="text-gray-400 leading-relaxed font-light">
+                      Ingrédients sélectionnés avec passion, techniques artisanales préservées.
                     </p>
                   </div>
                   
-                  {/* Boutons d'action avec style amélioré */}
-                  <div className="flex flex-col sm:flex-row gap-6 justify-center animate-in slide-in-from-bottom duration-700 delay-400">
-                    <Link href="/Commande">
-                      <button className="group bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 hover:from-yellow-500 hover:via-orange-500 hover:to-red-500 text-black font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/50 focus:outline-none text-lg overflow-hidden tracking-wide shadow-lg relative"
-                        style={{ fontFamily: "'Inter', 'Segoe UI', 'Roboto', sans-serif" }}
-                      >
-                        <span className="relative z-10 flex items-center space-x-3">
-                          <span className="font-semibold">COMMANDER MAINTENANT</span>
-                          <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                          </svg>
-                        </span>
-                        <div className="absolute inset-0 bg-white/20 translate-x-full group-hover:translate-x-0 transition-transform duration-500 skew-x-12"></div>
-                      </button>
-                    </Link>
-                    
-                    <button 
-                      onClick={() => setActivePage('carte')}
-                      className="group bg-transparent border-2 border-white/30 text-white font-bold py-4 px-8 rounded-2xl focus:outline-none text-lg backdrop-blur-sm hover:border-yellow-400/50 hover:bg-yellow-400/10 transition-all duration-300 hover:scale-105"
-                    >
-                      <span className="flex items-center space-x-3">
-                        <span>VOIR LA CARTE</span>
-                        <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </span>
-                    </button>
+                  <div className="text-center" data-animate="scale-in">
+                    <h3 className="text-xl text-white mb-3 font-light">Fraîcheur</h3>
+                    <p className="text-gray-400 leading-relaxed font-light">
+                      Produits locaux et de saison, préparés quotidiennement dans nos cuisines.
+                    </p>
+                  </div>
+                  
+                  <div className="text-center" data-animate="scale-in">
+                    <h3 className="text-xl text-white mb-3 font-light">Innovation</h3>
+                    <p className="text-gray-400 leading-relaxed font-light">
+                      Créativité culinaire et respect des traditions, pour une expérience unique.
+                    </p>
                   </div>
                 </div>
-                
-                {/* Ligne décorative en bas */}
-                <div className="w-[95%] h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto mt-8 animate-pulse"></div>
               </div>
-            </div>
+            </section>
 
-            {/* Section Statistiques */}
-            <div className="w-full max-w-6xl px-4 mb-16">
-              <div className="text-center mb-12">
-                <h2 className="text-4xl font-bold text-white mb-4 drop-shadow-lg">Notre Service</h2>
-                <div className="w-[30%] h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto"></div>
+            {/* Call to Action final - Minimaliste */}
+            <section data-section="cta" className="w-full py-24 px-6 border-t border-gray-800">
+              <div className="max-w-3xl mx-auto text-center">
+                <h2 className="text-3xl lg:text-4xl font-light text-white mb-8 tracking-tight" data-animate="slide-in-bottom">
+                  Prêt à découvrir ?
+                </h2>
+                <p className="text-gray-400 mb-12 text-lg font-light leading-relaxed" data-animate="fade-in-up">
+                  Rejoignez-nous pour une expérience gastronomique mémorable.
+                </p>
+                <Link href="/Commande">
+                  <button className="group px-12 py-5 bg-yellow-400 text-black font-medium tracking-wider uppercase hover:bg-white transition-all duration-300 text-lg bounce-in-hover pulse-glow" data-animate="scale-in">
+                    Commencer l&apos;expérience
+                  </button>
+                </Link>
               </div>
-            </div>
-            <div className="w-full max-w-6xl px-4 mb-16">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300 group">
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                      <span className="text-2xl">🍔</span>
-                    </div>
-                    <h3 className="text-2xl font-bold text-white mb-2">50+</h3>
-                    <p className="text-gray-200">Burgers uniques</p>
-                  </div>
-                </div>
-                
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300 group">
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                      <span className="text-2xl">⭐</span>
-                    </div>
-                    <h3 className="text-2xl font-bold text-white mb-2">4.8/5</h3>
-                    <p className="text-gray-200">Note clients</p>
-                  </div>
-                </div>
-                
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300 group">
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                      <span className="text-2xl">🚀</span>
-                    </div>
-                    <h3 className="text-2xl font-bold text-white mb-2">15min</h3>
-                    <p className="text-gray-200">Livraison rapide</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Section Spécialités */}
-            <div className="w-full max-w-6xl px-4 mb-16">
-              <div className="text-center mb-12">
-                <h2 className="text-4xl font-bold text-white mb-4 drop-shadow-lg">Nos Spécialités</h2>
-                <div className="w-[30%] h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mx-auto"></div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="group bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-md rounded-2xl p-6 border border-gray-600/50 hover:border-yellow-400/50 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/20">
-                  <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                    <span className="text-2xl">🔥</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-3">Burgers Signature</h3>
-                  <p className="text-gray-300 leading-relaxed">
-                    Nos burgers artisanaux préparés avec des ingrédients frais et des recettes secrètes transmises de génération en génération.
-                  </p>
-                </div>
-                
-                <div className="group bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-md rounded-2xl p-6 border border-gray-600/50 hover:border-yellow-400/50 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/20">
-                  <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                    <span className="text-2xl">🥗</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-3">Ingrédients Frais</h3>
-                  <p className="text-gray-300 leading-relaxed">
-                    Nous sélectionnons avec soin les meilleurs ingrédients locaux pour garantir fraîcheur et qualité dans chaque bouchée.
-                  </p>
-                </div>
-                
-                <div className="group bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-md rounded-2xl p-6 border border-gray-600/50 hover:border-yellow-400/50 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/20">
-                  <div className="w-16 h-16 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                    <span className="text-2xl">⚡</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-3">Service Rapide</h3>
-                  <p className="text-gray-300 leading-relaxed">
-                    Commandez en ligne et recevez votre repas en 15 minutes. Rapidité et qualité, c&apos;est notre promesse !
-                  </p>
-                </div>
-              </div>
-            </div>
+            </section>
           </div>
         )   }
         
@@ -896,6 +951,29 @@ export default function Home() {
         )}
       </div>
       
+      {/* Flèche chevron fixe en bas de l'écran */}
+      {activePage === 'home' && (
+        <div 
+          onClick={() => {
+            const statsSection = document.querySelector('[data-section="stats"]');
+            if (statsSection) {
+              statsSection.scrollIntoView({ behavior: 'smooth' });
+            }
+          }}
+          className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 cursor-pointer p-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-yellow-400/20 hover:border-yellow-400/50 transition-all duration-300 group"
+        >
+          <svg 
+            className="w-6 h-6 text-white group-hover:text-yellow-400 transform group-hover:translate-y-1 transition-all duration-300 animate-bounce" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+            strokeWidth="1.5"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+          </svg>
+        </div>
+      )}
+
       {/* Espace en bas pour s'assurer que tout le contenu soit visible */}
       <div className="h-20"></div>
     </div>

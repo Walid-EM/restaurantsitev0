@@ -28,6 +28,7 @@ export default function ApiTest() {
 📞 Contactez le support technique si le problème persiste`);
       }
     } catch (error) {
+      console.error('Erreur checkSystemHealth:', error);
       setTestResult(`❌ Système indisponible
 🔌 Problème de connexion réseau
 📞 Contactez le support technique
@@ -63,6 +64,7 @@ ${data.stats.byCategory.map((cat: { category: string; count: number }) =>
 📞 Contactez le support si nécessaire`);
       }
     } catch (error) {
+      console.error('Erreur getSystemInfo:', error);
       setTestResult(`❌ Erreur lors de la récupération des informations
 📞 Contactez le support technique`);
     } finally {
@@ -102,12 +104,58 @@ ${data.stats.byCategory.map((cat: { category: string; count: number }) =>
 📞 Contactez le support si nécessaire`);
       }
     } catch (error) {
+      console.error('Erreur refreshData:', error);
       setTestResult(`❌ Erreur lors de l'actualisation
 📞 Contactez le support technique`);
     } finally {
       setLoading(false);
     }
   };
+
+  const migrateCategoryOptions = async () => {
+    setLoading(true);
+    setTestResult('Migration des options de catégories...');
+    
+    try {
+      const response = await fetch('/api/admin/setup/migrate-category-options', {
+        method: 'POST',
+        credentials: 'include'
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setTestResult(`✅ Migration des options de catégories terminée !
+📊 Résumé:
+📂 Total catégories: ${data.summary.total}
+✅ Mises à jour: ${data.summary.updated}
+⏭️ Ignorées: ${data.summary.skipped}
+
+📋 Détails par catégorie:
+${data.details.map((detail: { category: string; action: string; allowedOptions?: string[]; reason?: string }) => 
+  detail.action === 'updated' 
+    ? `• ${detail.category}: ✅ Options ajoutées [${detail.allowedOptions?.join(', ')}]`
+    : `• ${detail.category}: ⏭️ ${detail.reason}`
+).join('\n')}
+
+⏰ Migration effectuée le: ${new Date().toLocaleString('fr-FR')}
+🎯 Les catégories peuvent maintenant être configurées depuis le dashboard admin`);
+      } else {
+        setTestResult(`❌ Erreur lors de la migration: ${data.error}
+📞 Contactez le support si nécessaire`);
+      }
+    } catch (error) {
+      console.error('Erreur migrateCategoryOptions:', error);
+      setTestResult(`❌ Erreur lors de la migration des options de catégories
+📞 Contactez le support technique`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
+
 
   return (
     <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
@@ -136,6 +184,14 @@ ${data.stats.byCategory.map((cat: { category: string; count: number }) =>
           className="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50"
         >
           🔄 Actualiser les données
+        </button>
+        
+        <button
+          onClick={migrateCategoryOptions}
+          disabled={loading}
+          className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50"
+        >
+          🔧 Migrer options catégories
         </button>
       </div>
       
