@@ -2,52 +2,34 @@ import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import Category from '@/models/Category';
 import Product from '@/models/Product';
-import { categories, products } from '@/app/data';
 
 // Route de test étape par étape pour diagnostiquer l'initialisation
 export async function POST() {
   try {
     console.log('🧪 Test étape par étape de l\'initialisation...');
     
-    // Étape 1: Vérifier l'import des données
-    console.log('📋 Étape 1: Vérification des imports...');
-    console.log('- categories importé:', !!categories);
-    console.log('- products importé:', !!products);
-    console.log('- Nombre de catégories:', categories?.length || 0);
-    console.log('- Nombre de produits:', products?.length || 0);
+    // Étape 1: Vérifier l'environnement
+    console.log('📋 Étape 1: Vérification de l\'environnement...');
+    console.log('- NODE_ENV:', process.env.NODE_ENV);
+    console.log('- MONGODB_URI:', !!process.env.MONGODB_URI);
     
-    if (!categories || !products) {
-      throw new Error('Imports des données échoués');
-    }
-    
-    // Étape 2: Vérifier la structure des données
-    console.log('📋 Étape 2: Vérification de la structure...');
-    const firstCategory = categories[0];
-    const firstProduct = products[0];
-    
-    console.log('Première catégorie:', {
-      name: firstCategory?.name,
-      description: firstCategory?.description,
-      image: firstCategory?.image
-    });
-    
-    console.log('Premier produit:', {
-      name: firstProduct?.name,
-      description: firstProduct?.description,
-      price: firstProduct?.price,
-      category: firstProduct?.category,
-      image: firstProduct?.image
-    });
-    
-    // Étape 3: Connexion MongoDB
-    console.log('📋 Étape 3: Connexion MongoDB...');
+    // Étape 2: Connexion MongoDB
+    console.log('📋 Étape 2: Connexion MongoDB...');
     await connectDB();
     console.log('✅ MongoDB connecté');
     
-    // Étape 4: Vérifier les modèles
-    console.log('📋 Étape 4: Vérification des modèles...');
+    // Étape 3: Vérifier les modèles
+    console.log('📋 Étape 3: Vérification des modèles...');
     console.log('- Modèle Category:', !!Category);
     console.log('- Modèle Product:', !!Product);
+    
+    // Étape 4: Vérifier la base de données existante
+    console.log('📋 Étape 4: Vérification de la base de données...');
+    const categoriesCount = await Category.countDocuments();
+    const productsCount = await Product.countDocuments();
+    
+    console.log('- Catégories existantes:', categoriesCount);
+    console.log('- Produits existants:', productsCount);
     
     // Étape 5: Test de création d'une seule catégorie
     console.log('📋 Étape 5: Test création d\'une catégorie...');
@@ -55,7 +37,9 @@ export async function POST() {
       name: 'Test Catégorie',
       description: 'Catégorie de test',
       image: '/test.png',
-      isActive: true
+      isActive: true,
+      allowedOptions: ['supplements', 'sauces'],
+      order: 999
     });
     
     const savedCategory = await testCategory.save();
@@ -69,7 +53,7 @@ export async function POST() {
       price: 9.99,
       category: 'test',
       image: '/test.png',
-      isActive: true
+      isAvailable: true
     });
     
     const savedProduct = await testProduct.save();
@@ -85,19 +69,25 @@ export async function POST() {
       success: true,
       message: 'Test étape par étape réussi',
       steps: {
-        imports: '✅',
-        structure: '✅',
+        environment: '✅',
         connection: '✅',
         models: '✅',
+        database: '✅',
         categoryCreation: '✅',
         productCreation: '✅',
         cleanup: '✅'
       },
       data: {
-        categoriesCount: categories.length,
-        productsCount: products.length,
-        firstCategory: firstCategory,
-        firstProduct: firstProduct
+        categoriesCount,
+        productsCount,
+        testCategory: {
+          name: testCategory.name,
+          description: testCategory.description
+        },
+        testProduct: {
+          name: testProduct.name,
+          price: testProduct.price
+        }
       }
     });
     

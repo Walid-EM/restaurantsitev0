@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CartItem, OptionSupplement, OptionExtra, Accompagnements, Boissons, OptionSauce } from "../types";
 import { useCart } from "../CartProvider";
 import PaymentModal from "../components/PaymentModal";
+import "../fonts.css";
 // Pas d'imports de composants de scroll pour le moment
 
 // Types pour les données dynamiques
@@ -666,7 +667,7 @@ export default function CommandePage() {
                   <h1 className={`font-light text-white tracking-[0.2em] group-hover:text-yellow-400 transition-all duration-300 ${
                     isScrolled ? 'text-xl xl:text-2xl' : 'text-2xl xl:text-3xl'
                   }`}>
-                    DELICE <span className="font-thin italic text-yellow-400">WAND</span>
+                    Bokh<span className="font-thin italic text-yellow-400">eat</span>
                   </h1>
                 </button>
               </Link>
@@ -708,13 +709,13 @@ export default function CommandePage() {
               {/* Bouton Commander - Desktop adaptatif */}
               <button 
                 onClick={() => setIsCartDialogOpen(true)}
-                className={`hidden md:block bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold tracking-wider uppercase hover:from-yellow-500 hover:to-yellow-600 transition-all duration-300 rounded-2xl shadow-xl hover:shadow-yellow-400/30 transform hover:scale-105 ${
-                  isScrolled ? 'px-10 py-3 text-sm' : 'px-12 py-4 text-base'
-                }`}
+                    className={`hidden md:block bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-light tracking-wider uppercase hover:from-yellow-500 hover:to-yellow-600 transition-all duration-300 rounded-2xl shadow-xl hover:shadow-yellow-400/30 transform hover:scale-105 capture-it-font border-2 border-yellow-600 hover:border-yellow-700 hover:shadow-yellow-400/50 ${
+                    isScrolled ? 'px-8 py-2 text-sm' : 'px-10 py-3 text-base'
+                  }`}
                 disabled={cartItems.length === 0}
               >
                 <span className="relative z-10 flex items-center">
-                  <span className="font-semibold">Commander Maintenant</span>
+                   <span className="font-light capture-it-font text-lg tracking-wider whitespace-nowrap">Commander Maintenant</span>
                   {cartItems.length > 0 && (
                     <span className="flex absolute -top-3 -right-8 text-black text-sm font-bold rounded-full h-6 w-6 items-center justify-center animate-pulse">
                       {cartItems.length}
@@ -823,7 +824,7 @@ export default function CommandePage() {
                     <div className="absolute inset-0 bg-yellow-400/20 rounded-full blur-lg opacity-80"></div>
                   </div>
                   <div>
-                    <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent mb-2">{category.name}</h2>
+                    <h2 className="text-3xl md:text-4xl font-light bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent mb-2 capture-it-font">{category.name}</h2>
                     <div className="w-20 h-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full opacity-80"></div>
                   </div>
                 </div>
@@ -851,7 +852,7 @@ export default function CommandePage() {
                       >
                         {/* Div gauche - Titre et prix modernisés */}
                         <div className="flex-1 flex flex-col justify-center relative z-10">
-                          <h2 className="text-xl font-bold text-white mb-3 group-hover:text-yellow-400 transition-colors duration-300">{product.name}</h2>
+                          <h2 className="text-xl font-light text-white mb-3 group-hover:text-yellow-400 transition-colors duration-300 capture-it-font">{product.name}</h2>
                           <span className="text-yellow-400 text-xl font-bold mb-3">{formatPrice(product.price)}</span>
                           <p className="text-gray-300 leading-relaxed mb-3">{product.description}</p>
                           
@@ -897,12 +898,12 @@ export default function CommandePage() {
         <div className="md:hidden fixed bottom-6 right-6 z-50">
           <button 
             onClick={() => setIsCartDialogOpen(true)}
-            className="relative group bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 hover:from-yellow-500 hover:via-orange-500 hover:to-red-500 text-black font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/50 focus:outline-none text-base overflow-hidden tracking-wide shadow-lg"
+            className="relative group bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 hover:from-yellow-500 hover:via-orange-500 hover:to-red-500 text-black font-light py-4 md:py-5 px-8 md:px-10 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/50 focus:outline-none text-base overflow-hidden tracking-wide shadow-lg capture-it-font border-2 border-orange-600 hover:border-orange-700 hover:shadow-orange-500/50"
             style={{ fontFamily: "'Inter', 'Segoe UI', 'Roboto', sans-serif" }}
             disabled={cartItems.length === 0}
           >
             <span className="relative z-10 flex items-center">
-              <span className="font-semibold">COMMANDER</span>
+                                      <span className="font-light capture-it-font text-base md:text-lg tracking-wider whitespace-nowrap">COMMANDER</span>
               {cartItems.length > 0 && (
                 <span className="absolute -top-3 -right-7 text-gray-900 text-sm font-bold rounded-full h-6 w-6 flex items-center justify-center ">
                   {cartItems.length}
@@ -1003,7 +1004,7 @@ export default function CommandePage() {
                                   className="w-5 h-5"
                                 />
                               </div>
-                              <h2 className="font-bold text-xl text-white bg-gradient-to-r from-green-400 to-green-500 bg-clip-text text-transparent">
+                              <h2 className="font-light text-xl text-white bg-gradient-to-r from-green-400 to-green-500 bg-clip-text text-transparent capture-it-font">
                                 Crudités
                               </h2>
                             </div>
@@ -1045,7 +1046,7 @@ export default function CommandePage() {
                                   className="w-5 h-5"
                                 />
                               </div>
-                              <h2 className="font-bold text-xl text-white bg-gradient-to-r from-red-400 to-red-500 bg-clip-text text-transparent">
+                              <h2 className="font-light text-xl text-white bg-gradient-to-r from-red-400 to-red-500 bg-clip-text text-transparent capture-it-font">
                                 Sauces
                               </h2>
                             </div>
@@ -1088,7 +1089,7 @@ export default function CommandePage() {
                               <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center mr-3">
                                 <span className="text-black text-sm font-bold">+</span>
                               </div>
-                              <h2 className="font-bold text-xl text-white">
+                              <h2 className="font-light text-xl text-white capture-it-font">
                                 Suppléments
                               </h2>
                             </div>
@@ -1133,7 +1134,7 @@ export default function CommandePage() {
                                   className="w-5 h-5"
                                 />
                               </div>
-                              <h2 className="font-bold text-xl text-white bg-gradient-to-r from-blue-400 to-blue-500 bg-clip-text text-transparent">
+                              <h2 className="font-light text-xl text-white bg-gradient-to-r from-blue-400 to-blue-500 bg-clip-text text-transparent capture-it-font">
                                 Accompagnements
                               </h2>
                             </div>
@@ -1185,7 +1186,7 @@ export default function CommandePage() {
                                   className="w-5 h-5"
                                 />
                               </div>
-                              <h2 className="font-bold text-xl text-white bg-gradient-to-r from-purple-400 to-purple-500 bg-clip-text text-transparent">
+                              <h2 className="font-light text-xl text-white bg-gradient-to-r from-purple-400 to-purple-500 bg-clip-text text-transparent capture-it-font">
                                 Boissons
                               </h2>
                             </div>
@@ -1233,15 +1234,15 @@ export default function CommandePage() {
               <div className="p-6 border-t border-gray-600 bg-gradient-to-r from-gray-800 to-gray-900">
                 <button 
                   onClick={addToCartFromModal}
-                  className="w-full md:w-[40%] md:ml-auto bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black py-4 px-8 rounded-xl font-bold text-lg flex items-center justify-between transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-yellow-500/25 border border-yellow-400 hover:border-yellow-500"
+                  className="w-full md:w-[50%] md:ml-auto bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black py-4 md:py-5 px-6 md:px-12 rounded-xl font-light text-base md:text-lg flex flex-col md:flex-row items-center justify-between gap-3 md:gap-0 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-yellow-500/25 border-2 border-orange-600 hover:border-orange-700 capture-it-font hover:shadow-orange-500/50"
                 >
-                  <span className="flex items-center">
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  <span className="flex items-center justify-center md:justify-start w-full md:flex-1">
+                    <svg className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
-                    Ajouter à la commande
+                    <span className="capture-it-font text-base md:text-lg tracking-wide whitespace-nowrap">Ajouter à la commande</span>
                   </span>
-                  <span className="text-xl font-bold">{calculateModalTotal().toFixed(2)}€</span>
+                  <span className="text-xl md:text-2xl font-bold text-center md:text-right">{calculateModalTotal().toFixed(2)}€</span>
                 </button>
               </div>
             </div>
@@ -1254,7 +1255,7 @@ export default function CommandePage() {
             {/* Header */}
             <div className="p-6 border-b border-gray-600">
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-white">Votre Commande</h2>
+                <h2 className="text-2xl font-light text-white capture-it-font">Votre Commande</h2>
                 <button
                   onClick={() => setIsCartDialogOpen(false)}
                   className="text-gray-400 hover:text-white"
@@ -1477,7 +1478,7 @@ export default function CommandePage() {
                   className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black border border-yellow-400 hover:border-yellow-500 rounded-xl py-3 px-6 font-semibold transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-yellow-500/25 whitespace-nowrap"
                   disabled={cartItems.length === 0}
                 >
-                  Confirmer la commande
+                                          <span className="capture-it-font">Confirmer la commande</span>
                 </button>
                 
                 <div className="text-gray-300 text-sm bg-gray-700/50 px-4 py-2 rounded-lg border border-gray-600">
@@ -1507,7 +1508,7 @@ export default function CommandePage() {
                 </svg>
               </button>
               <div className="text-left md:text-center">
-                <h2 className="text-2xl md:text-3xl font-bold text-white mb-3 bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">Choisissez votre option</h2>
+                <h2 className="text-2xl md:text-3xl font-light text-white mb-3 bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent capture-it-font">Choisissez votre option</h2>
                 <p className="text-gray-300 text-sm md:text-base">Comment souhaitez-vous recevoir votre commande ?</p>
                 {/* Ligne décorative moderne */}
                 <div className="mt-4 w-full h-1 bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-400 rounded-full opacity-80"></div>
@@ -1544,9 +1545,9 @@ export default function CommandePage() {
                   </div>
                   
                   <div className="text-center relative z-10">
-                    <h3 className="text-xl md:text-2xl font-bold mb-3 group-hover:text-yellow-400 transition-colors duration-300 bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent group-hover:from-yellow-400 group-hover:to-orange-400">Sur place</h3>
+                    <h3 className="text-xl md:text-2xl font-light mb-3 group-hover:text-yellow-400 transition-colors duration-300 bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent group-hover:from-yellow-400 group-hover:to-orange-400 capture-it-font">Sur place</h3>
                     <p className="text-gray-400 text-sm md:text-base group-hover:text-gray-300 transition-colors duration-300 leading-relaxed">
-                      Dégustez votre commande dans notre restaurant
+                                              <span className="capture-it-font">Dégustez votre commande dans notre restaurant</span>
                     </p>
                   </div>
                   
@@ -1588,9 +1589,9 @@ export default function CommandePage() {
                   </div>
                   
                   <div className="text-center relative z-10">
-                    <h3 className="text-xl md:text-2xl font-bold mb-3 group-hover:text-yellow-400 transition-colors duration-300 bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent group-hover:from-yellow-400 group-hover:to-orange-400">A emporter</h3>
+                    <h3 className="text-xl md:text-2xl font-light mb-3 group-hover:text-yellow-400 transition-colors duration-300 bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent group-hover:from-yellow-400 group-hover:to-orange-400 capture-it-font">A emporter</h3>
                     <p className="text-gray-400 text-sm md:text-base group-hover:text-gray-300 transition-colors duration-300 leading-relaxed">
-                      Emportez votre commande où vous voulez
+                                              <span className="capture-it-font">Emportez votre commande où vous voulez</span>
                     </p>
                   </div>
                   
@@ -1615,9 +1616,9 @@ export default function CommandePage() {
                     setIsConfirmationOpen(false);
                     setIsCartDialogOpen(true);
                   }}
-                  className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black border border-yellow-400 hover:border-yellow-500 rounded-xl py-3 px-6 font-semibold transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-yellow-500/25"
+                  className="bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 text-white border-2 border-gray-500 hover:border-gray-400 rounded-xl py-3 md:py-4 px-6 md:px-8 font-light transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-gray-500/25 capture-it-font hover:shadow-gray-400/50"
                 >
-                  ← Retour au panier
+                  <span className="capture-it-font text-base md:text-lg tracking-wide whitespace-nowrap">← Retour au panier</span>
                 </button>
                 
                 <div className="flex flex-col items-center gap-3">
@@ -1636,7 +1637,7 @@ export default function CommandePage() {
           <div className="bg-gray-800 rounded-lg max-w-md w-full mx-4 border border-gray-600">
             {/* Header */}
             <div className="p-6 border-b border-gray-600">
-              <h3 className="text-lg font-semibold text-white">Confirmation de suppression</h3>
+                              <h3 className="text-lg font-light text-white capture-it-font">Confirmation de suppression</h3>
             </div>
             
             {/* Body */}

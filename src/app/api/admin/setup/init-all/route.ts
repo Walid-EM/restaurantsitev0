@@ -7,18 +7,125 @@ import Sauce from '@/models/Sauce';
 import Supplement from '@/models/Supplement';
 import Accompagnement from '@/models/Accompagnement';
 import Boisson from '@/models/Boisson';
-// import Bicky from '@/models/Bicky'; // Modèle supprimé - utilise Product
-import { 
-  categories, 
-  products, 
-  extra, 
-  sauces, 
-  supplements, 
-  accompagnements, 
-  boissons,
-  BICKY
-} from '@/app/data';
 import { Product as ProductType } from '@/app/types';
+
+// Données de test intégrées pour l'initialisation
+const testData = {
+  categories: [
+    {
+      name: 'Burgers',
+      description: 'Nos délicieux burgers maison',
+      image: '/cheeseburger.png',
+      isActive: true,
+      allowedOptions: ['supplements', 'sauces', 'accompagnements', 'boissons'],
+      order: 1
+    },
+    {
+      name: 'Accompagnements',
+      description: 'Frites et autres accompagnements',
+      image: '/Frites.png',
+      isActive: true,
+      allowedOptions: ['sauces'],
+      order: 2
+    },
+    {
+      name: 'Boissons',
+      description: 'Rafraîchissements et boissons chaudes',
+      image: '/Coca.png',
+      isActive: true,
+      allowedOptions: [],
+      order: 3
+    }
+  ],
+  products: [
+    {
+      name: 'Cheese Burger',
+      description: 'Burger avec steak, fromage, salade et tomate',
+      price: 8.50,
+      category: 'burgers',
+      image: '/cheeseburger.png',
+      isAvailable: true
+    },
+    {
+      name: 'Double Cheese Burger',
+      description: 'Double steak avec double fromage',
+      price: 12.00,
+      category: 'burgers',
+      image: '/doublecheeseburger.png',
+      isAvailable: true
+    }
+  ],
+  extra: [
+    {
+      name: 'Cornichons',
+      price: 0.50,
+      image: '/cornichon.png',
+      isActive: true
+    },
+    {
+      name: 'Cheddar',
+      price: 0.50,
+      image: '/cheddar.png',
+      isActive: true
+    }
+  ],
+  sauces: [
+    {
+      name: 'Sauce BBQ',
+      price: 0.00,
+      image: '/Sauceicone.png',
+      isActive: true
+    },
+    {
+      name: 'Sauce Ketchup',
+      price: 0.00,
+      image: '/Sauceicone.png',
+      isActive: true
+    }
+  ],
+  supplements: [
+    {
+      name: 'Oignons',
+      price: 0.00,
+      image: '/oignons.png',
+      isActive: true
+    },
+    {
+      name: 'Tomates',
+      price: 0.00,
+      image: '/tomates.png',
+      isActive: true
+    }
+  ],
+  accompagnements: [
+    {
+      name: 'Frites',
+      price: 2.50,
+      image: '/Frites.png',
+      isActive: true
+    },
+    {
+      name: 'Frites XL',
+      price: 3.00,
+      image: '/Frites.png',
+      isActive: true
+    }
+  ],
+  boissons: [
+    {
+      name: 'Coca-Cola',
+      price: 2.50,
+      image: '/Coca.png',
+      isActive: true
+    },
+    {
+      name: 'Sprite',
+      price: 2.50,
+      image: '/sprite.png',
+      isActive: true
+    }
+  ]
+};
 
 // Route pour initialiser TOUS les éléments de la base de données
 export async function POST() {
@@ -31,11 +138,13 @@ export async function POST() {
     // 1. Initialiser les catégories
     console.log('🏷️ Initialisation des catégories...');
     await Category.deleteMany({});
-    const categoryData = categories.map(cat => ({
+    const categoryData = testData.categories.map(cat => ({
       name: cat.name,
       description: cat.description,
       image: cat.image,
-      isActive: true
+      isActive: cat.isActive,
+      allowedOptions: cat.allowedOptions,
+      order: cat.order
     }));
     const createdCategories = await Category.insertMany(categoryData);
     console.log(`✅ ${createdCategories.length} catégories créées`);
@@ -43,13 +152,13 @@ export async function POST() {
     // 2. Initialiser les produits
     console.log('🏗️ Initialisation des produits...');
     await Product.deleteMany({});
-    const productData = products.map(prod => ({
+    const productData = testData.products.map(prod => ({
       name: prod.name,
       description: prod.description,
-      price: parseFloat(prod.price.replace(' €', '')),
+      price: prod.price,
       category: prod.category,
       image: prod.image,
-      isAvailable: true
+      isAvailable: prod.isAvailable
     }));
     const createdProducts = await Product.insertMany(productData);
     console.log(`✅ ${createdProducts.length} produits créés`);
@@ -57,11 +166,11 @@ export async function POST() {
     // 3. Initialiser les extras (suppléments payants)
     console.log('🆕 Initialisation des extras...');
     await Extra.deleteMany({});
-    const extraData = extra.map(ext => ({
+    const extraData = testData.extra.map(ext => ({
       name: ext.name,
       price: ext.price,
       image: ext.image,
-      isActive: true
+      isActive: ext.isActive
     }));
     const createdExtras = await Extra.insertMany(extraData);
     console.log(`✅ ${createdExtras.length} extras créés`);
@@ -69,11 +178,11 @@ export async function POST() {
     // 4. Initialiser les sauces
     console.log('🥫 Initialisation des sauces...');
     await Sauce.deleteMany({});
-    const sauceData = sauces.map(sauce => ({
+    const sauceData = testData.sauces.map(sauce => ({
       name: sauce.name,
       price: sauce.price,
       image: sauce.image,
-      isActive: true
+      isActive: sauce.isActive
     }));
     const createdSauces = await Sauce.insertMany(sauceData);
     console.log(`✅ ${createdSauces.length} sauces créées`);
@@ -81,11 +190,11 @@ export async function POST() {
     // 5. Initialiser les suppléments (gratuits)
     console.log('🥬 Initialisation des suppléments...');
     await Supplement.deleteMany({});
-    const supplementData = supplements.map(supp => ({
+    const supplementData = testData.supplements.map(supp => ({
       name: supp.name,
       price: supp.price,
       image: supp.image,
-      isActive: true
+      isActive: supp.isActive
     }));
     const createdSupplements = await Supplement.insertMany(supplementData);
     console.log(`✅ ${createdSupplements.length} suppléments créés`);
@@ -93,11 +202,11 @@ export async function POST() {
     // 6. Initialiser les accompagnements
     console.log('🍟 Initialisation des accompagnements...');
     await Accompagnement.deleteMany({});
-    const accompagnementData = accompagnements.map(acc => ({
+    const accompagnementData = testData.accompagnements.map(acc => ({
       name: acc.name,
       price: acc.price,
       image: acc.image,
-      isActive: true
+      isActive: acc.isActive
     }));
     const createdAccompagnements = await Accompagnement.insertMany(accompagnementData);
     console.log(`✅ ${createdAccompagnements.length} accompagnements créés`);
@@ -105,36 +214,14 @@ export async function POST() {
     // 7. Initialiser les boissons
     console.log('🥤 Initialisation des boissons...');
     await Boisson.deleteMany({});
-    const boissonData = boissons.map(boisson => ({
+    const boissonData = testData.boissons.map(boisson => ({
       name: boisson.name,
       price: boisson.price,
       image: boisson.image,
-      isActive: true
+      isActive: boisson.isActive
     }));
     const createdBoissons = await Boisson.insertMany(boissonData);
     console.log(`✅ ${createdBoissons.length} boissons créées`);
-    
-    // 8. Initialiser les Bicky via Product unifié
-    console.log('🍔 Initialisation des Bicky comme Products...');
-    await Product.deleteMany({ category: 'bicky' }); // Supprimer les anciens Bicky
-    const bickyData = BICKY.map((bicky: ProductType) => ({
-      name: bicky.name,
-      description: bicky.description,
-      price: parseFloat(bicky.price.replace(' €', '')),
-      category: 'bicky', // Catégorie unifiée
-      image: bicky.image,
-      isAvailable: true,
-      ingredients: [bicky.description], // Utiliser la description comme ingrédient principal
-      isSpicy: bicky.name.toLowerCase().includes('kefta') || bicky.name.toLowerCase().includes('merguez'),
-      isVegetarian: false, // Tous les Bicky contiennent de la viande
-      extras: [], // Vide par défaut
-      metadata: {
-        initializedFromData: true,
-        initDate: new Date()
-      }
-    }));
-    const createdBickies = await Product.insertMany(bickyData);
-    console.log(`✅ ${createdBickies.length} Bicky créés comme Products`);
     
     // Vérification finale
     const stats = {
@@ -161,8 +248,7 @@ export async function POST() {
         sauces: createdSauces.length,
         supplements: createdSupplements.length,
         accompagnements: createdAccompagnements.length,
-        boissons: createdBoissons.length,
-        bickies: createdBickies.length
+        boissons: createdBoissons.length
       }
     });
     

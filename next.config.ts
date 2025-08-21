@@ -11,6 +11,15 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Configuration pour servir les fichiers statiques du dossier uploads
+  async rewrites() {
+    return [
+      {
+        source: '/uploads/:path*',
+        destination: '/api/static/:path*',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

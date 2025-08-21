@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { useState, useEffect } from "react";
 import MongoDBTest from "./components/MongoDBTest";
+import "./fonts.css";
 
 // Types pour les données de la base
 interface Category {
@@ -354,7 +355,7 @@ export default function Home() {
                 <h1 className={`font-light text-white tracking-[0.2em] group-hover:text-yellow-400 transition-all duration-300 ${
                   isScrolled ? 'text-xl xl:text-2xl' : 'text-2xl xl:text-3xl'
                 }`}>
-                  DELICE <span className="font-thin italic text-yellow-400">WAND</span>
+                  Bokh<span className="font-thin italic text-yellow-400">eat</span>
                 </h1>
               </button>
             </div>
@@ -423,10 +424,12 @@ export default function Home() {
 
               {/* Bouton Commander - Desktop */}
               <Link href="/Commande">
-                <button className={`hidden xl:block bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold tracking-wider uppercase hover:from-yellow-500 hover:to-yellow-600 transition-all duration-300 rounded-2xl shadow-xl hover:shadow-yellow-400/30 transform hover:scale-105 ${
-                  isScrolled ? 'px-10 py-3 text-sm' : 'px-12 py-4 text-base'
+                <button className={`hidden xl:block bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-light tracking-wider uppercase hover:from-yellow-500 hover:to-yellow-600 transition-all duration-300 rounded-2xl shadow-xl hover:shadow-yellow-400/30 transform hover:scale-105 capture-it-font border-2 border-yellow-600 hover:border-yellow-700 hover:shadow-yellow-400/50 ${
+                  isScrolled ? 'px-8 py-2 text-sm' : 'px-10 py-3 text-base'
                 }`}>
-                  Commander Maintenant
+                  <span className="relative z-10 flex items-center">
+                    <span className="font-light capture-it-font text-lg tracking-wider whitespace-nowrap">Commander Maintenant</span>
+                  </span>
                 </button>
               </Link>
             </div>
@@ -615,8 +618,10 @@ export default function Home() {
                 {/* Footer avec bouton Commander */}
                 <div className="px-4 py-4 border-t border-white/20 bg-gradient-to-r from-transparent to-white/5">
                   <Link href="/Commande">
-                    <button className="w-full group relative overflow-hidden bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold tracking-wider uppercase transition-all duration-300 rounded-xl shadow-lg hover:shadow-yellow-400/25 transform hover:scale-[1.02] py-4">
-                      <span className="relative z-10">Commander Maintenant</span>
+                    <button className="w-full group relative overflow-hidden bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-light tracking-wider uppercase transition-all duration-300 rounded-xl shadow-lg hover:shadow-yellow-400/25 transform hover:scale-[1.02] py-4 capture-it-font border-2 border-yellow-600 hover:border-yellow-700 hover:shadow-yellow-400/50">
+                      <span className="relative z-10 flex items-center justify-center">
+                        <span className="font-light capture-it-font text-lg tracking-wider whitespace-nowrap">Commander Maintenant</span>
+                      </span>
                       <div className="absolute inset-0 bg-white transform translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
                     </button>
                   </Link>
@@ -691,9 +696,9 @@ export default function Home() {
             <section data-section="hero" className="w-full h-[75vh] md:h-[70vh] flex items-center justify-center px-6 relative">
               <div className="max-w-5xl w-full text-center">
                 {/* Titre principal épuré */}
-                <h1 className="text-6xl sm:text-8xl lg:text-9xl font-light text-white mb-4 tracking-tight leading-none tracking-in-expand-fwd">
-                  Delice
-                  <span className=" text-yellow-400 font-thin italic">Wand</span>
+                <h1 className="text-6xl sm:text-8xl lg:text-9xl font-light text-white mb-4 tracking-tight leading-none tracking-in-expand-fwd capture-it-font">
+                  Bokh
+                  <span className=" text-yellow-400 font-thin italic">eat</span>
 
                 </h1>
                 
@@ -752,7 +757,7 @@ export default function Home() {
             {/* Section Philosophie - Design épuré */}
             <section data-section="philosophy" className="w-full py-16 px-6 border-t border-gray-800">
               <div className="max-w-4xl mx-auto text-center">
-                <h2 className="text-4xl lg:text-5xl font-light text-white mb-8 tracking-tight" data-animate="slide-in-bottom">
+                <h2 className="text-4xl lg:text-5xl font-light text-white mb-8 tracking-tight capture-it-font" data-animate="slide-in-bottom">
                   Notre <span className="text-yellow-400 italic">Philosophie</span>
                 </h2>
                 
@@ -784,7 +789,7 @@ export default function Home() {
             {/* Call to Action final - Minimaliste */}
             <section data-section="cta" className="w-full py-24 px-6 border-t border-gray-800">
               <div className="max-w-3xl mx-auto text-center">
-                <h2 className="text-3xl lg:text-4xl font-light text-white mb-8 tracking-tight" data-animate="slide-in-bottom">
+                <h2 className="text-3xl lg:text-4xl font-light text-white mb-8 tracking-tight capture-it-font" data-animate="slide-in-bottom">
                   Prêt à découvrir ?
                 </h2>
                 <p className="text-gray-400 mb-12 text-lg font-light leading-relaxed" data-animate="fade-in-up">
@@ -806,22 +811,22 @@ export default function Home() {
             <div className="max-w-7xl mx-auto">
               
               {/* Section Hero avec image de fond */}
-              <div className="relative h-96 rounded-3xl overflow-hidden mb-16 group" data-animate="fade-in-up">
+              <div className="relative h-64 sm:h-80 md:h-96 rounded-2xl sm:rounded-3xl overflow-hidden mb-8 sm:mb-12 md:mb-16 group" data-animate="fade-in-up">
                 <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-black/20 to-transparent"></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                <div className="relative z-10 h-full flex items-end p-12">
+                <div className="relative z-10 h-full flex items-end p-4 sm:p-6 md:p-8 lg:p-12">
                   <div className="text-white">
-                    <h1 className="text-6xl font-thin mb-4 tracking-wider">
-                      Delice <span className="text-yellow-400 italic">Wand</span>
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-thin mb-2 sm:mb-3 md:mb-4 tracking-wider capture-it-font">
+                      Bokh<span className="text-yellow-400 italic">eat</span>
                     </h1>
-                    <p className="text-xl text-gray-200 max-w-2xl leading-relaxed">
+                    <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-200 max-w-2xl leading-relaxed">
                       Une expérience culinaire unique où tradition et modernité se rencontrent pour créer des moments inoubliables.
                     </p>
                   </div>
                 </div>
                 {/* Éléments décoratifs flottants */}
-                <div className="absolute top-8 right-8 w-20 h-20 bg-yellow-400/20 rounded-full blur-xl group-hover:bg-yellow-400/30 transition-all duration-700"></div>
-                <div className="absolute bottom-16 left-12 w-16 h-16 bg-blue-400/20 rounded-full blur-xl group-hover:bg-blue-400/30 transition-all duration-700"></div>
+                <div className="absolute top-4 sm:top-6 md:top-8 right-4 sm:right-6 md:right-8 w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-yellow-400/20 rounded-full blur-xl group-hover:bg-yellow-400/30 transition-all duration-700"></div>
+                <div className="absolute bottom-8 sm:bottom-12 md:bottom-16 left-6 sm:left-8 md:left-12 w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 bg-blue-400/20 rounded-full blur-xl group-hover:bg-blue-400/30 transition-all duration-700"></div>
               </div>
 
               {/* Grille principale avec sections alternées */}
@@ -835,7 +840,7 @@ export default function Home() {
                         <span className="text-3xl">🏛️</span>
                       </div>
                       <div>
-                        <h2 className="text-3xl font-light text-white mb-2">Notre Histoire</h2>
+                        <h2 className="text-3xl font-light text-white mb-2 capture-it-font">Notre Histoire</h2>
                         <div className="w-20 h-0.5 bg-yellow-400 rounded-full"></div>
                       </div>
                     </div>
@@ -863,20 +868,17 @@ export default function Home() {
 
                 {/* Section Équipe - Étroite */}
                 <div className="lg:col-span-4" data-animate="slide-in-right">
-                  <div className="bg-gradient-to-br from-purple-800/80 to-purple-900/80 backdrop-blur-xl rounded-3xl p-8 border border-purple-600/30 h-full flex flex-col justify-center">
+                  <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-600/30 h-full flex flex-col justify-center">
                     <div className="text-center mb-6">
-                      <div className="w-20 h-20 bg-purple-400/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <div className="w-20 h-20 bg-gray-400/30 rounded-full flex items-center justify-center mx-auto mb-4">
                         <span className="text-4xl">👨‍🍳</span>
                       </div>
                       <h3 className="text-2xl font-light text-white mb-2">Notre Équipe</h3>
-                      <div className="w-16 h-0.5 bg-purple-400 rounded-full mx-auto"></div>
+                      <div className="w-16 h-0.5 bg-gray-400 rounded-full mx-auto"></div>
                     </div>
-                    <p className="text-gray-300 text-center mb-6 leading-relaxed">
+                    <p className="text-gray-300 text-center leading-relaxed">
                       Des passionnés qui créent chaque jour des expériences culinaires exceptionnelles.
                     </p>
-                    <button className="w-full bg-purple-500 hover:bg-purple-600 text-white font-medium py-3 px-6 rounded-xl transition-all duration-300 hover:scale-105">
-                      Rejoindre l&apos;équipe
-                    </button>
                   </div>
                 </div>
               </div>
@@ -884,7 +886,7 @@ export default function Home() {
               {/* Section Catégories Culinaires */}
               <div className="mb-16" data-animate="fade-in-up">
                 <div className="text-center mb-12" data-animate="slide-in-bottom">
-                  <h2 className="text-4xl font-light text-white mb-4">Catégories Culinaires</h2>
+                  <h2 className="text-4xl font-light text-white mb-4 capture-it-font">Catégories Culinaires</h2>
                   <div className="w-32 h-0.5 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 rounded-full mx-auto"></div>
                   <p className="text-xl text-gray-300 mt-6 max-w-2xl mx-auto leading-relaxed">
                     Explorez nos différentes catégories et découvrez des saveurs uniques
@@ -961,23 +963,23 @@ export default function Home() {
             <div className="max-w-7xl mx-auto">
               
               {/* Section Hero avec image de fond */}
-              <div className="relative h-96 rounded-3xl overflow-hidden mb-16 group" data-animate="fade-in-up">
+              <div className="relative h-64 sm:h-80 md:h-96 rounded-2xl sm:rounded-3xl overflow-hidden mb-8 sm:mb-12 md:mb-16 group" data-animate="fade-in-up">
                 <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-black/20 to-transparent"></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                <div className="relative z-10 h-full flex items-end p-12">
+                <div className="relative z-10 h-full flex items-end p-4 sm:p-6 md:p-8 lg:p-12">
                   <div className="text-white">
-                    <h1 className="text-6xl font-thin mb-4 tracking-wider">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-thin mb-2 sm:mb-3 md:mb-4 tracking-wider capture-it-font">
                       Réserver une <span className="text-yellow-400 italic">Table</span>
                     </h1>
-                    <p className="text-xl text-gray-200 max-w-2xl leading-relaxed">
-                      Créez des moments inoubliables en réservant votre table chez Delice Wand. 
+                    <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-200 max-w-2xl leading-relaxed">
+                      Créez des moments inoubliables en réservant votre table chez Bokheat. 
                       Une expérience gastronomique personnalisée vous attend.
                     </p>
                   </div>
                 </div>
                 {/* Éléments décoratifs flottants */}
-                <div className="absolute top-8 right-8 w-20 h-20 bg-yellow-400/20 rounded-full blur-xl group-hover:bg-yellow-400/30 transition-all duration-700"></div>
-                <div className="absolute bottom-16 left-12 w-16 h-16 bg-green-400/20 rounded-full blur-xl group-hover:bg-green-400/30 transition-all duration-700"></div>
+                <div className="absolute top-4 sm:top-6 md:top-8 right-4 sm:right-6 md:right-8 w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-yellow-400/20 rounded-full blur-xl group-hover:bg-yellow-400/30 transition-all duration-700"></div>
+                <div className="absolute bottom-8 sm:bottom-12 md:bottom-16 left-6 sm:left-8 md:left-12 w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 bg-green-400/20 rounded-full blur-xl group-hover:bg-green-400/30 transition-all duration-700"></div>
               </div>
 
               {/* Grille principale avec sections alternées */}
@@ -1094,13 +1096,13 @@ export default function Home() {
 
                 {/* Section Informations - Étroite */}
                 <div className="lg:col-span-4" data-animate="slide-in-right">
-                  <div className="bg-gradient-to-br from-green-800/80 to-blue-900/80 backdrop-blur-xl rounded-3xl p-8 border border-green-600/30 h-full flex flex-col justify-center">
+                  <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-600/30 h-full flex flex-col justify-center">
                     <div className="text-center mb-6">
-                      <div className="w-20 h-20 bg-green-400/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <div className="w-20 h-20 bg-gray-400/30 rounded-full flex items-center justify-center mx-auto mb-4">
                         <span className="text-4xl">ℹ️</span>
                       </div>
                       <h3 className="text-2xl font-light text-white mb-2">Informations Utiles</h3>
-                      <div className="w-16 h-0.5 bg-green-400 rounded-full mx-auto"></div>
+                      <div className="w-16 h-0.5 bg-gray-400 rounded-full mx-auto"></div>
                     </div>
                     <div className="space-y-4">
                       <div className="bg-white/10 rounded-xl p-4 border border-white/20">
@@ -1123,57 +1125,57 @@ export default function Home() {
               {/* Section Avantages en grille */}
               <div className="mb-16" data-animate="fade-in-up">
                 <div className="text-center mb-12" data-animate="slide-in-bottom">
-                  <h2 className="text-4xl font-light text-white mb-4">Pourquoi Réserver ?</h2>
+                  <h2 className="text-4xl font-light text-white mb-4 capture-it-font">Pourquoi Réserver ?</h2>
                   <div className="w-32 h-0.5 bg-gradient-to-r from-yellow-400 via-green-500 to-blue-500 rounded-full mx-auto"></div>
                   <p className="text-xl text-gray-300 mt-6 max-w-2xl mx-auto leading-relaxed">
-                    Découvrez tous les avantages de réserver votre table chez Delice Wand
+                    Découvrez tous les avantages de réserver votre table chez Bokheat
                   </p>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   {/* Avantage 1 - Garantie de place */}
                   <div className="group relative" data-animate="scale-in">
-                    <div className="bg-gradient-to-br from-yellow-500/20 to-orange-500/20 backdrop-blur-xl rounded-2xl p-8 border border-yellow-400/30 hover:border-yellow-400/60 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-yellow-400/25">
-                      <div className="w-20 h-20 bg-yellow-400/30 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-yellow-400/50 transition-all duration-300 group-hover:scale-110">
+                    <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl rounded-2xl p-8 border border-gray-600/30 hover:border-gray-500/60 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-gray-400/25">
+                      <div className="w-20 h-20 bg-gray-400/30 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-gray-400/50 transition-all duration-300 group-hover:scale-110">
                         <span className="text-4xl">✅</span>
                       </div>
-                      <h3 className="text-2xl font-medium text-white mb-4 text-center group-hover:text-yellow-400 transition-colors duration-300">Garantie de Place</h3>
+                      <h3 className="text-2xl font-medium text-white mb-4 text-center group-hover:text-gray-300 transition-colors duration-300">Garantie de Place</h3>
                       <p className="text-gray-300 text-center mb-6 leading-relaxed group-hover:text-gray-200 transition-colors duration-300">
                         Votre table est garantie même en période d&apos;affluence. Plus d&apos;attente, plus de stress !
                       </p>
                     </div>
                     {/* Élément décoratif */}
-                    <div className="absolute -top-2 -right-2 w-4 h-4 bg-yellow-400 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
+                    <div className="absolute -top-2 -right-2 w-4 h-4 bg-gray-400 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
                   </div>
 
                   {/* Avantage 2 - Service personnalisé */}
                   <div className="group relative" data-animate="scale-in">
-                    <div className="bg-gradient-to-br from-green-500/20 to-blue-500/20 backdrop-blur-xl rounded-2xl p-8 border border-green-400/30 hover:border-green-400/60 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-green-400/25">
-                      <div className="w-20 h-20 bg-green-400/30 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-green-400/50 transition-all duration-300 group-hover:scale-110">
+                    <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl rounded-2xl p-8 border border-gray-600/30 hover:border-gray-500/60 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-gray-400/25">
+                      <div className="w-20 h-20 bg-gray-400/30 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-gray-400/50 transition-all duration-300 group-hover:scale-110">
                         <span className="text-4xl">👑</span>
                       </div>
-                      <h3 className="text-2xl font-medium text-white mb-4 text-center group-hover:text-green-400 transition-colors duration-300">Service Personnalisé</h3>
+                      <h3 className="text-2xl font-medium text-white mb-4 text-center group-hover:text-gray-300 transition-colors duration-300">Service Personnalisé</h3>
                       <p className="text-gray-300 text-center mb-6 leading-relaxed group-hover:text-gray-200 transition-colors duration-300">
                         Notre équipe prépare votre arrivée et s&apos;adapte à vos besoins spécifiques.
                       </p>
                     </div>
                     {/* Élément décoratif */}
-                    <div className="absolute -top-2 -right-2 w-4 h-4 bg-green-400 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
+                    <div className="absolute -top-2 -right-2 w-4 h-4 bg-gray-400 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
                   </div>
 
                   {/* Avantage 3 - Flexibilité */}
                   <div className="group relative" data-animate="scale-in">
-                    <div className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-xl rounded-2xl p-8 border border-blue-400/30 hover:border-blue-400/60 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-400/25">
-                      <div className="w-20 h-20 bg-blue-400/30 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-400/50 transition-all duration-300 group-hover:scale-110">
+                    <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl rounded-2xl p-8 border border-gray-600/30 hover:border-gray-500/60 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-gray-400/25">
+                      <div className="w-20 h-20 bg-gray-400/30 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-gray-400/50 transition-all duration-300 group-hover:scale-110">
                         <span className="text-4xl">🔄</span>
                       </div>
-                      <h3 className="text-2xl font-medium text-white mb-4 text-center group-hover:text-blue-400 transition-colors duration-300">Flexibilité Totale</h3>
+                      <h3 className="text-2xl font-medium text-white mb-4 text-center group-hover:text-gray-300 transition-colors duration-300">Flexibilité Totale</h3>
                       <p className="text-gray-300 text-center mb-6 leading-relaxed group-hover:text-gray-200 transition-colors duration-300">
                         Modifiez ou annulez votre réservation jusqu&apos;à 24h avant sans frais.
                       </p>
                     </div>
                     {/* Élément décoratif */}
-                    <div className="absolute -top-2 -right-2 w-4 h-4 bg-blue-400 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
+                    <div className="absolute -top-2 -right-2 w-4 h-4 bg-gray-400 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
                   </div>
                 </div>
               </div>
@@ -1207,46 +1209,62 @@ export default function Home() {
             <div className="max-w-7xl mx-auto">
               
               {/* Section Hero avec image de fond */}
-              <div className="relative h-96 rounded-3xl overflow-hidden mb-16 group" data-animate="fade-in-up">
+              <div className="relative h-64 sm:h-80 md:h-96 rounded-2xl sm:rounded-3xl overflow-hidden mb-8 sm:mb-12 md:mb-16 group" data-animate="fade-in-up">
                 <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-black/20 to-transparent"></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                <div className="relative z-10 h-full flex items-end p-12">
+                <div className="relative z-10 h-full flex items-end p-4 sm:p-6 md:p-8 lg:p-12">
                   <div className="text-white">
-                    <h1 className="text-6xl font-thin mb-4 tracking-wider">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-thin mb-2 sm:mb-3 md:mb-4 tracking-wider capture-it-font">
                       Notre <span className="text-yellow-400 italic">Localisation</span>
                     </h1>
-                    <p className="text-xl text-gray-200 max-w-2xl leading-relaxed">
+                    <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-200 max-w-2xl leading-relaxed">
                       Venez nous découvrir au cœur de Bruxelles, dans un cadre chaleureux et accueillant 
                       où tradition et modernité se rencontrent.
                     </p>
                   </div>
                 </div>
                 {/* Éléments décoratifs flottants */}
-                <div className="absolute top-8 right-8 w-20 h-20 bg-blue-400/20 rounded-full blur-xl group-hover:bg-blue-400/30 transition-all duration-700"></div>
-                <div className="absolute bottom-16 left-12 w-16 h-16 bg-purple-400/20 rounded-full blur-xl group-hover:bg-purple-400/30 transition-all duration-700"></div>
+                <div className="absolute top-4 sm:top-6 md:top-8 right-4 sm:right-6 md:right-8 w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-blue-400/20 rounded-full blur-xl group-hover:bg-blue-400/30 transition-all duration-700"></div>
+                <div className="absolute bottom-8 sm:bottom-12 md:bottom-16 left-6 sm:left-8 md:left-12 w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 bg-purple-400/20 rounded-full blur-xl group-hover:bg-purple-400/30 transition-all duration-700"></div>
               </div>
 
               {/* Grille principale avec sections alternées */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-16">
                 
-                {/* Section Adresse - Large */}
+                {/* Section Adresse fusionnée avec carte - Large */}
                 <div className="lg:col-span-8" data-animate="slide-in-left">
-                  <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-600/30 hover:border-blue-400/50 transition-all duration-500 group">
+                  <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-600/30 hover:border-gray-500/50 transition-all duration-500 group">
                     <div className="flex items-center mb-6">
-                      <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center mr-6 group-hover:scale-110 transition-transform duration-300">
+                      <div className="w-16 h-16 bg-gradient-to-br from-gray-500 to-gray-600 rounded-2xl flex items-center justify-center mr-6 group-hover:scale-110 transition-transform duration-300">
                         <span className="text-3xl">📍</span>
                       </div>
                       <div>
-                        <h2 className="text-3xl font-light text-white mb-2">Notre Adresse</h2>
-                        <div className="w-20 h-0.5 bg-blue-400 rounded-full"></div>
+                        <h2 className="text-3xl font-light text-white mb-2 capture-it-font">Notre Adresse</h2>
+                        <div className="w-20 h-0.5 bg-gray-400 rounded-full"></div>
                       </div>
                     </div>
-                    <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl p-6 border border-blue-400/30 mb-6">
+                    
+                    {/* Carte Google Maps intégrée */}
+                    <div className="w-full h-96 rounded-2xl overflow-hidden border border-gray-600/50 mb-6">
+                      <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2518.6666!2d4.3556!3d50.8863!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47c3c47e5b5b1234%3A0x5678!2sRue%20de%20Wand%2064%2C%201020%20Laeken%2C%20Belgium!5e0!3m2!1sfr!2sfr!4v1234567890123!5m2!1sfr!2sfr"
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        allowFullScreen
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        className="rounded-2xl"
+                      />
+                    </div>
+                    
+                    {/* Adresse sous la carte */}
+                    <div className="bg-gradient-to-r from-gray-500/20 to-gray-600/20 rounded-2xl p-6 border border-gray-400/30">
                       <div className="flex items-center mb-4">
                         <span className="text-3xl mr-4">🏢</span>
                         <div>
-                          <h4 className="text-2xl font-medium text-white">Delice Wand</h4>
-                          <p className="text-blue-300 text-lg">Restaurant & Snack</p>
+                          <h4 className="text-2xl font-medium text-white">Bokheat</h4>
+                          <p className="text-gray-300 text-lg">Restaurant & Snack</p>
                         </div>
                       </div>
                       <div className="space-y-3 text-gray-200">
@@ -1255,32 +1273,18 @@ export default function Home() {
                         <p className="text-xl">Belgique</p>
                       </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="bg-gray-700/50 rounded-xl p-4 text-center group hover:bg-gray-700/70 transition-all duration-300 hover:scale-105">
-                        <div className="text-2xl font-bold text-blue-400 mb-1 group-hover:text-blue-300 transition-colors duration-300">📍</div>
-                        <div className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300">Centre-ville</div>
-                      </div>
-                      <div className="bg-gray-700/50 rounded-xl p-4 text-center group hover:bg-gray-700/70 transition-all duration-300 hover:scale-105">
-                        <div className="text-2xl font-bold text-purple-400 mb-1 group-hover:text-purple-300 transition-colors duration-300">🚇</div>
-                        <div className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300">Métro proche</div>
-                      </div>
-                      <div className="bg-gray-700/50 rounded-xl p-4 text-center group hover:bg-gray-700/70 transition-all duration-300 hover:scale-105">
-                        <div className="text-2xl font-bold text-green-400 mb-1 group-hover:text-green-300 transition-colors duration-300">🅿️</div>
-                        <div className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300">Parking</div>
-                      </div>
-                    </div>
                   </div>
                 </div>
 
                 {/* Section Horaires - Étroite */}
                 <div className="lg:col-span-4" data-animate="slide-in-right">
-                  <div className="bg-gradient-to-br from-green-800/80 to-blue-900/80 backdrop-blur-xl rounded-3xl p-8 border border-green-600/30 h-full flex flex-col justify-center">
+                  <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-600/30 h-full flex flex-col justify-center">
                     <div className="text-center mb-6">
-                      <div className="w-20 h-20 bg-green-400/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <div className="w-20 h-20 bg-gray-400/30 rounded-full flex items-center justify-center mx-auto mb-4">
                         <span className="text-4xl">🕒</span>
                       </div>
                       <h3 className="text-2xl font-light text-white mb-2">Horaires d&apos;Ouverture</h3>
-                      <div className="w-16 h-0.5 bg-green-400 rounded-full mx-auto"></div>
+                      <div className="w-16 h-0.5 bg-gray-400 rounded-full mx-auto"></div>
                     </div>
                     <div className="space-y-4">
                       <div className="bg-white/10 rounded-xl p-4 border border-white/20">
@@ -1302,80 +1306,9 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Section Contact en grille */}
-              <div className="mb-16" data-animate="fade-in-up">
-                <div className="text-center mb-12" data-animate="slide-in-bottom">
-                  <h2 className="text-4xl font-light text-white mb-4">Nous Contacter</h2>
-                  <div className="w-32 h-0.5 bg-gradient-to-r from-yellow-400 via-green-500 to-blue-500 rounded-full mx-auto"></div>
-                  <p className="text-xl text-gray-300 mt-6 max-w-2xl mx-auto leading-relaxed">
-                    Restez connecté avec nous pour toutes vos questions et commandes
-                  </p>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Téléphone */}
-                  <div className="group relative" data-animate="scale-in">
-                    <div className="bg-gradient-to-br from-yellow-500/20 to-orange-500/20 backdrop-blur-xl rounded-2xl p-8 border border-yellow-400/30 hover:border-yellow-400/60 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-yellow-400/25">
-                      <div className="w-20 h-20 bg-yellow-400/30 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-yellow-400/50 transition-all duration-300 group-hover:scale-110">
-                        <span className="text-4xl">📱</span>
-                      </div>
-                      <h3 className="text-2xl font-medium text-white mb-4 text-center group-hover:text-yellow-400 transition-colors duration-300">Téléphone</h3>
-                      <p className="text-gray-300 text-center mb-6 leading-relaxed group-hover:text-gray-200 transition-colors duration-300">
-                        Appelez-nous directement pour vos commandes et questions
-                      </p>
-                      <div className="text-center">
-                        <div className="text-3xl font-bold text-yellow-400 group-hover:text-yellow-300 transition-colors duration-300">
-                          02 468 12 76
-                        </div>
-                      </div>
-                    </div>
-                    {/* Élément décoratif */}
-                    <div className="absolute -top-2 -right-2 w-4 h-4 bg-yellow-400 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
-                  </div>
 
-                  {/* Email */}
-                  <div className="group relative" data-animate="scale-in">
-                    <div className="bg-gradient-to-br from-green-500/20 to-blue-500/20 backdrop-blur-xl rounded-2xl p-8 border border-green-400/30 hover:border-green-400/60 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-green-400/25">
-                      <div className="w-20 h-20 bg-green-400/30 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-green-400/50 transition-all duration-300 group-hover:scale-110">
-                        <span className="text-4xl">✉️</span>
-                      </div>
-                      <h3 className="text-2xl font-medium text-white mb-4 text-center group-hover:text-green-400 transition-colors duration-300">Email</h3>
-                      <p className="text-gray-300 text-center mb-6 leading-relaxed group-hover:text-gray-200 transition-colors duration-300">
-                        Écrivez-nous pour vos demandes spéciales et réservations
-                      </p>
-                      <div className="text-center">
-                        <div className="text-xl font-semibold text-green-400 group-hover:text-green-300 transition-colors duration-300">
-                          contact@delicewand.be
-                        </div>
-                      </div>
-                    </div>
-                    {/* Élément décoratif */}
-                    <div className="absolute -top-2 -right-2 w-4 h-4 bg-green-400 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
-                  </div>
-                </div>
-              </div>
 
-              {/* Section Google Maps */}
-              <div className="mb-16" data-animate="fade-in-up">
-                <div className="text-center mb-8" data-animate="slide-in-bottom">
-                  <h3 className="text-3xl font-light text-white mb-4">Localisation Interactive</h3>
-                  <div className="w-24 h-0.5 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full mx-auto"></div>
-                </div>
-                <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-600/30">
-                  <div className="w-full h-96 rounded-2xl overflow-hidden border border-gray-600/50">
-                    <iframe
-                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2518.6666!2d4.3556!3d50.8863!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47c3c47e5b5b1234%3A0x5678!2sRue%20de%20Wand%2064%2C%201020%20Laeken%2C%20Belgium!5e0!3m2!1sfr!2sfr!4v1234567890123!5m2!1sfr!2sfr"
-                      width="100%"
-                      height="100%"
-                      style={{ border: 0 }}
-                      allowFullScreen
-                      loading="lazy"
-                      referrerPolicy="no-referrer-when-downgrade"
-                      className="rounded-2xl"
-                    />
-                  </div>
-                </div>
-              </div>
+
 
               {/* Section Call-to-Action finale */}
               <div className="text-center" data-animate="slide-in-bottom">
@@ -1390,7 +1323,10 @@ export default function Home() {
                         Commander en ligne
                       </button>
                     </Link>
-                    <button className="border-2 border-blue-400/50 hover:border-blue-400 text-blue-400 hover:text-white hover:bg-blue-400 font-medium py-4 px-8 rounded-2xl transition-all duration-300 hover:scale-105">
+                    <button 
+                      onClick={() => setActivePage('reservation')}
+                      className="border-2 border-blue-400/50 hover:border-blue-400 text-blue-400 hover:text-white hover:bg-blue-400 font-medium py-4 px-8 rounded-2xl transition-all duration-300 hover:scale-105"
+                    >
                       Réserver une table
                     </button>
                   </div>
@@ -1406,23 +1342,76 @@ export default function Home() {
             <div className="max-w-7xl mx-auto">
               
               {/* Section Hero avec image de fond */}
-              <div className="relative h-96 rounded-3xl overflow-hidden mb-16 group" data-animate="fade-in-up">
+              <div className="relative h-64 sm:h-80 md:h-96 rounded-2xl sm:rounded-3xl overflow-hidden mb-8 sm:mb-12 md:mb-16 group" data-animate="fade-in-up">
                 <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-black/20 to-transparent"></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                <div className="relative z-10 h-full flex items-end p-12">
+                <div className="relative z-10 h-full flex items-end p-4 sm:p-6 md:p-8 lg:p-12">
                   <div className="text-white">
-                    <h1 className="text-6xl font-thin mb-4 tracking-wider">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-thin mb-2 sm:mb-3 md:mb-4 tracking-wider capture-it-font">
                       Rejoindre la <span className="text-yellow-400 italic">Communauté</span>
                     </h1>
-                    <p className="text-xl text-gray-200 max-w-2xl leading-relaxed">
-                      Restez connecté avec Delice Wand et découvrez en avant-première nos nouvelles créations, 
+                    <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-200 max-w-2xl leading-relaxed">
+                      Restez connecté avec Bokheat et découvrez en avant-première nos nouvelles créations, 
                       nos offres spéciales et les coulisses de notre restaurant !
                     </p>
                   </div>
                 </div>
                 {/* Éléments décoratifs flottants */}
-                <div className="absolute top-8 right-8 w-20 h-20 bg-yellow-400/20 rounded-full blur-xl group-hover:bg-yellow-400/30 transition-all duration-700"></div>
-                <div className="absolute bottom-16 left-12 w-16 h-16 bg-orange-400/20 rounded-full blur-xl group-hover:bg-orange-400/30 transition-all duration-700"></div>
+                <div className="absolute top-4 sm:top-6 md:top-8 right-4 sm:right-6 md:right-8 w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-yellow-400/20 rounded-full blur-xl group-hover:bg-yellow-400/30 transition-all duration-700"></div>
+                <div className="absolute bottom-8 sm:bottom-12 md:bottom-16 left-6 sm:left-8 md:left-12 w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 bg-orange-400/20 rounded-full blur-xl group-hover:bg-orange-400/30 transition-all duration-700"></div>
+              </div>
+
+              {/* Section Nous Contacter */}
+              <div className="mb-16" data-animate="fade-in-up">
+                <div className="text-center mb-12" data-animate="slide-in-bottom">
+                  <h2 className="text-4xl font-light text-white mb-4 capture-it-font">Nous Contacter</h2>
+                  <div className="w-32 h-0.5 bg-gradient-to-r from-yellow-400 via-green-500 to-blue-500 rounded-full mx-auto"></div>
+                  <p className="text-xl text-gray-300 mt-6 max-w-2xl mx-auto leading-relaxed">
+                    Restez connecté avec nous pour toutes vos questions et commandes
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* Téléphone */}
+                  <div className="group relative" data-animate="scale-in">
+                    <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl rounded-2xl p-8 border border-gray-600/30 hover:border-gray-500/60 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-gray-400/25">
+                      <div className="w-20 h-20 bg-gray-400/30 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-gray-400/50 transition-all duration-300 group-hover:scale-110">
+                        <span className="text-4xl">📱</span>
+                      </div>
+                      <h3 className="text-2xl font-medium text-white mb-4 text-center group-hover:text-gray-300 transition-colors duration-300">Téléphone</h3>
+                      <p className="text-gray-300 text-center mb-6 leading-relaxed group-hover:text-gray-200 transition-colors duration-300">
+                        Appelez-nous directement pour vos commandes et questions
+                      </p>
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
+                          02 468 12 76
+                        </div>
+                      </div>
+                    </div>
+                    {/* Élément décoratif */}
+                    <div className="absolute -top-2 -right-2 w-4 h-4 bg-gray-400 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
+                  </div>
+
+                  {/* Email */}
+                  <div className="group relative" data-animate="scale-in">
+                    <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl rounded-2xl p-8 border border-gray-600/30 hover:border-gray-500/60 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-gray-400/25">
+                      <div className="w-20 h-20 bg-gray-400/30 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-gray-400/50 transition-all duration-300 group-hover:scale-110">
+                        <span className="text-4xl">✉️</span>
+                      </div>
+                      <h3 className="text-2xl font-medium text-white mb-4 text-center group-hover:text-gray-300 transition-colors duration-300">Email</h3>
+                      <p className="text-gray-300 text-center mb-6 leading-relaxed group-hover:text-gray-200 transition-colors duration-300">
+                        Écrivez-nous pour vos demandes spéciales et réservations
+                      </p>
+                      <div className="text-center">
+                        <div className="text-xl font-semibold text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
+                          contact@Bokheat.be
+                        </div>
+                      </div>
+                    </div>
+                    {/* Élément décoratif */}
+                    <div className="absolute -top-2 -right-2 w-4 h-4 bg-gray-400 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
+                  </div>
+                </div>
               </div>
 
               {/* Grille principale avec sections alternées */}
@@ -1436,12 +1425,12 @@ export default function Home() {
                         <span className="text-3xl">🌟</span>
                       </div>
                       <div>
-                        <h2 className="text-3xl font-light text-white mb-2">Rejoignez Notre Communauté</h2>
+                        <h2 className="text-3xl font-light text-white mb-2 capture-it-font">Rejoignez Notre Communauté</h2>
                         <div className="w-20 h-0.5 bg-green-400 rounded-full"></div>
                       </div>
                     </div>
                     <p className="text-lg text-gray-300 leading-relaxed mb-6">
-                      Restez connecté avec Delice Wand et découvrez en avant-première nos nouvelles créations, 
+                      Restez connecté avec Bokheat et découvrez en avant-première nos nouvelles créations, 
                       nos offres spéciales et les coulisses de notre restaurant ! Rejoignez notre communauté 
                       de passionnés de gastronomie.
                     </p>
@@ -1498,10 +1487,10 @@ export default function Home() {
               {/* Section Réseaux Sociaux en grille */}
               <div className="mb-16" data-animate="fade-in-up">
                 <div className="text-center mb-12" data-animate="slide-in-bottom">
-                  <h2 className="text-4xl font-light text-white mb-4">Nos Réseaux Sociaux</h2>
+                  <h2 className="text-4xl font-light text-white mb-4 capture-it-font">Nos Réseaux Sociaux</h2>
                   <div className="w-32 h-0.5 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 rounded-full mx-auto"></div>
                   <p className="text-xl text-gray-300 mt-6 max-w-2xl mx-auto leading-relaxed">
-                    Suivez-nous sur tous nos réseaux pour rester connecté avec Delice Wand
+                    Suivez-nous sur tous nos réseaux pour rester connecté avec Bokheat
                   </p>
                 </div>
                 
@@ -1519,7 +1508,7 @@ export default function Home() {
                         Actualités, photos et événements
                       </p>
                       <div className="text-center">
-                        <div className="text-blue-400 font-semibold group-hover:text-blue-300 transition-colors duration-300">@DeliceWand</div>
+                        <div className="text-blue-400 font-semibold group-hover:text-blue-300 transition-colors duration-300">@Bokheat</div>
                       </div>
                     </div>
                     {/* Élément décoratif */}
@@ -1543,7 +1532,7 @@ export default function Home() {
                         Photos et stories quotidiennes
                       </p>
                       <div className="text-center">
-                        <div className="text-pink-400 font-semibold group-hover:text-pink-300 transition-colors duration-300">@delicewand</div>
+                        <div className="text-pink-400 font-semibold group-hover:text-pink-300 transition-colors duration-300">@Bokheat</div>
                       </div>
                     </div>
                     {/* Élément décoratif */}
@@ -1563,7 +1552,7 @@ export default function Home() {
                         Vidéos courtes et fun
                       </p>
                       <div className="text-center">
-                        <div className="text-red-400 font-semibold group-hover:text-red-300 transition-colors duration-300">@delicewand</div>
+                        <div className="text-red-400 font-semibold group-hover:text-red-300 transition-colors duration-300">@Bokheat</div>
                       </div>
                     </div>
                     {/* Élément décoratif */}
@@ -1597,7 +1586,7 @@ export default function Home() {
                 <div className="bg-gradient-to-r from-yellow-400/10 via-orange-500/10 to-red-500/10 backdrop-blur-xl rounded-3xl p-12 border border-yellow-400/20">
                   <h2 className="text-4xl font-light text-white mb-6">Prêt à nous rejoindre ?</h2>
                   <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
-                    Rejoignez notre communauté et restez connecté avec Delice Wand pour ne manquer aucune nouveauté !
+                    Rejoignez notre communauté et restez connecté avec Bokheat pour ne manquer aucune nouveauté !
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <button className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-medium py-4 px-8 rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/50">
@@ -1642,3 +1631,4 @@ export default function Home() {
     </div>
   );
 }
+

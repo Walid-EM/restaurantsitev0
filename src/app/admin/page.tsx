@@ -7,6 +7,9 @@ import Link from 'next/link';
 import StrictAdminProtected from '../components/StrictAdminProtected';
 import { adminApiGet, adminApiPost, adminApiPut, adminApiDelete, adminApiReorderCategories } from '@/lib/adminApi';
 import ApiTest from '../components/ApiTest';
+import AdminImageUpload from '@/components/ui/AdminImageUpload';
+import AdminImageDisplay from '@/components/ui/AdminImageDisplay';
+import AdminImageManager from '@/components/ui/AdminImageManager';
 import { 
   Package, 
   Tag, 
@@ -27,7 +30,8 @@ import {
   PieChart,
   Clock,
   Wifi,
-  X
+  X,
+  Image as ImageIcon
 } from 'lucide-react';
 
 interface DashboardStats {
@@ -47,6 +51,7 @@ interface Product {
   price: number;
   category: string;
   image: string;
+  imageId?: string;
   isAvailable: boolean;
   ingredients?: string[];
   isSpicy?: boolean;
@@ -60,6 +65,7 @@ interface Category {
   name: string;
   description: string;
   image: string;
+  imageId?: string;
   isActive: boolean;
   allowedOptions?: string[];
   order: number;
@@ -70,6 +76,7 @@ interface Supplement {
   id: string;
   name: string;
   image?: string;
+  imageId?: string;
   price: number;
   type: 'boissons' | 'accompagnements' | 'extras' | 'sauces' | 'supplements';
 }
@@ -441,6 +448,7 @@ export default function AdminDashboard() {
     { id: 'products', name: 'Produits', icon: Package },
     { id: 'categories', name: 'Catégories', icon: Tag },
     { id: 'supplements', name: 'Suppléments', icon: Plus },
+    { id: 'images', name: 'Images', icon: ImageIcon },
     { id: 'orders', name: 'Commandes', icon: ShoppingCart },
     { id: 'customers', name: 'Clients', icon: Users },
     { id: 'analytics', name: 'Statistiques', icon: BarChart3 },
@@ -541,6 +549,29 @@ export default function AdminDashboard() {
 
           {/* Outils de maintenance */}
           <ApiTest />
+          
+          {/* Test du système d'images */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+            <h3 className="text-lg font-semibold text-white mb-4">Test du Système d&apos;Images</h3>
+            <div className="text-center py-4">
+              <a
+                href="/admin/test-images"
+                className="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+              >
+                🖼️ Tester les Images
+              </a>
+              <p className="text-xs text-gray-400 mt-2">Testez l&apos;upload et l&apos;affichage des images</p>
+            </div>
+          </div>
+          
+          {/* Test de l'intégration MongoDB */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+            <h3 className="text-lg font-semibold text-white mb-4">Test MongoDB</h3>
+            <div className="text-gray-400 text-center py-4">
+              <p className="text-sm">Composant DataTest à implémenter</p>
+              <p className="text-xs mt-2">Pour tester l&apos;intégration MongoDB des composants UI</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -560,6 +591,7 @@ export default function AdminDashboard() {
       price: product?.price?.toString() || '',
       category: product?.category || '',
       image: product?.image || '',
+      imageId: product?.imageId || '',
       isAvailable: product?.isAvailable ?? true
     });
     const [loading, setLoading] = useState(false);
@@ -588,7 +620,8 @@ export default function AdminDashboard() {
 
         const submitData = {
           ...formData,
-          price: parseFloat(formData.price)
+          price: parseFloat(formData.price),
+          imageId: formData.imageId || undefined
         };
 
         const response = method === 'PUT' 
@@ -681,15 +714,17 @@ export default function AdminDashboard() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                URL de l&apos;image
-              </label>
-              <input
-                type="text"
-                value={formData.image}
-                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
-                placeholder="/image.png"
+              <AdminImageUpload
+                currentImage={formData.image}
+                currentImageId={formData.imageId}
+                onImageChange={(imageData) => setFormData({
+                  ...formData,
+                  image: imageData.filePath,
+                  imageId: imageData.imageId
+                })}
+                label="Image du produit"
+                required={false}
+                className="bg-gray-700 border border-gray-600 rounded-lg p-4"
               />
             </div>
 
@@ -738,6 +773,7 @@ export default function AdminDashboard() {
       name: category?.name || '',
       description: category?.description || '',
       image: category?.image || '',
+      imageId: category?.imageId || '',
       isActive: category?.isActive !== undefined ? category.isActive : true,
       allowedOptions: category?.allowedOptions || [],
       order: category?.order || categories.length + 1
@@ -781,6 +817,7 @@ export default function AdminDashboard() {
           name: formData.name,
           description: formData.description,
           image: formData.image,
+          imageId: formData.imageId || undefined,
           isActive: formData.isActive,
           allowedOptions: formData.allowedOptions,
           order: formData.order
@@ -844,16 +881,17 @@ export default function AdminDashboard() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                URL de l&apos;image *
-              </label>
-              <input
-                type="text"
-                value={formData.image}
-                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
-                placeholder="/image.png"
-                required
+              <AdminImageUpload
+                currentImage={formData.image}
+                currentImageId={formData.imageId}
+                onImageChange={(imageData) => setFormData({
+                  ...formData,
+                  image: imageData.filePath,
+                  imageId: imageData.imageId
+                })}
+                label="Image de la catégorie"
+                required={true}
+                className="bg-gray-700 border border-gray-600 rounded-lg p-4"
               />
             </div>
 
@@ -1163,12 +1201,12 @@ export default function AdminDashboard() {
                   {filteredProducts.map((product) => (
                     <tr key={product._id} className="hover:bg-white/5">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <Image
-                          src={product.image || '/placeholder.png'}
+                        <AdminImageDisplay
+                          image={product.image}
+                          imageId={product.imageId}
                           alt={product.name}
-                          width={48}
-                          height={48}
-                          className="w-12 h-12 rounded-lg object-cover"
+                          size="sm"
+                          showPreview={false}
                         />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -1239,6 +1277,7 @@ export default function AdminDashboard() {
       name: supplement?.name || '',
       price: supplement?.price?.toString() || '',
       image: supplement?.image || '',
+      imageId: supplement?.imageId || '',
       type: supplement?.type || 'boissons'
     });
     const [loading, setLoading] = useState(false);
@@ -1264,7 +1303,8 @@ export default function AdminDashboard() {
         const submitData = {
           name: formData.name,
           price: parseFloat(formData.price),
-          image: formData.image || undefined
+          image: formData.image || undefined,
+          imageId: formData.imageId || undefined
         };
 
         const response = method === 'PUT' 
@@ -1350,15 +1390,17 @@ export default function AdminDashboard() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                URL de l&apos;image
-              </label>
-              <input
-                type="text"
-                value={formData.image}
-                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
-                placeholder="/image.png"
+              <AdminImageUpload
+                currentImage={formData.image}
+                currentImageId={formData.imageId}
+                onImageChange={(imageData) => setFormData({
+                  ...formData,
+                  image: imageData.filePath,
+                  imageId: imageData.imageId
+                })}
+                label="Image du supplément"
+                required={false}
+                className="bg-gray-700 border border-gray-600 rounded-lg p-4"
               />
             </div>
 
@@ -1572,12 +1614,12 @@ export default function AdminDashboard() {
                   {filteredSupplements.map((supplement) => (
                     <tr key={supplement._id || supplement.id} className="hover:bg-white/5">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <Image
-                          src={supplement.image || '/placeholder.png'}
+                        <AdminImageDisplay
+                          image={supplement.image}
+                          imageId={supplement.imageId}
                           alt={supplement.name}
-                          width={48}
-                          height={48}
-                          className="w-12 h-12 rounded-lg object-cover"
+                          size="sm"
+                          showPreview={false}
                         />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -1616,6 +1658,39 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
+      </div>
+    );
+  };
+
+  // Gestion des images
+  const renderImages = () => {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-white">Gestion des Images</h2>
+          <div className="flex space-x-3">
+            <a
+              href="/admin/test-images"
+              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+            >
+              <span>🧪 Tester</span>
+            </a>
+            <a
+              href="/migrate-images"
+              className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+            >
+              <span>🚀 Migrer</span>
+            </a>
+          </div>
+        </div>
+
+        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+          <AdminImageManager />
+        </div>
+        
+
+        
+
       </div>
     );
   };
@@ -1862,12 +1937,12 @@ export default function AdminDashboard() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <Image
-                          src={category.image || '/placeholder.png'}
+                        <AdminImageDisplay
+                          image={category.image}
+                          imageId={category.imageId}
                           alt={category.name}
-                          width={48}
-                          height={48}
-                          className="w-12 h-12 rounded-lg object-cover"
+                          size="sm"
+                          showPreview={false}
                         />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -2104,6 +2179,8 @@ export default function AdminDashboard() {
         return renderCategories();
       case 'supplements':
         return renderSupplements();
+      case 'images':
+        return renderImages();
       case 'orders':
         return renderOrders();
       case 'customers':
