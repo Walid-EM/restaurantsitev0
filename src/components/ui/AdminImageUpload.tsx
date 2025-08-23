@@ -197,29 +197,47 @@ export default function AdminImageUpload({
 
       {/* Image actuelle */}
       {currentImage && (
-        <div className="relative">
-          <div className="w-32 h-32 border-2 border-gray-200 rounded-lg overflow-hidden">
-                         <MongoImage
-               imageId={currentImageId || ''}
-               filePath={currentImage}
-               alt="Image actuelle"
-               className="w-full h-full object-contain"
-               fallback={
-                 <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                   <ImageIcon className="w-8 h-8 text-gray-400" />
-                 </div>
-               }
-             />
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h4 className="font-medium text-gray-700 mb-3">Image actuellement sélectionnée :</h4>
+          <div className="flex items-center space-x-4">
+            <div className="relative">
+              <div className="w-32 h-32 border-2 border-gray-200 rounded-lg overflow-hidden bg-white">
+                <MongoImage
+                  imageId={currentImageId || ''}
+                  filePath={currentImage}
+                  alt="Image actuelle"
+                  className="w-full h-full object-contain"
+                  fallback={
+                    <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                      <ImageIcon className="w-8 h-8 text-gray-400" />
+                    </div>
+                  }
+                />
+              </div>
+              
+              {/* Bouton supprimer */}
+              <button
+                type="button"
+                onClick={removeCurrentImage}
+                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                title="Supprimer l'image sélectionnée"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+            
+            <div className="flex-1">
+              <p className="text-sm text-gray-600">
+                <strong>Nom :</strong> {currentImage.split('/').pop() || 'Image'}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>ID :</strong> {currentImageId || 'Non défini'}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Chemin :</strong> {currentImage}
+              </p>
+            </div>
           </div>
-          
-          {/* Bouton supprimer */}
-          <button
-            type="button"
-            onClick={removeCurrentImage}
-            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
-          >
-            <X className="w-3 h-3" />
-          </button>
         </div>
       )}
 

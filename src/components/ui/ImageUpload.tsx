@@ -8,7 +8,8 @@ interface UploadedImage {
   id: string;
   filename: string;
   originalName: string;
-  filePath: string;
+  filePath: string;        // Maintenant URL Cloudinary
+  cloudinaryId: string;    // Nouveau champ
   size: number;
   uploadedAt: string;
 }
@@ -50,8 +51,14 @@ export default function ImageUpload() {
       const result = await response.json();
 
       if (result.success) {
-        setUploadedImages(prev => [result.image, ...prev]);
-        setUploadStatus({ type: 'success', message: 'Image uploadée avec succès !' });
+        // Mise à jour avec les nouveaux champs
+        const newImage = {
+          ...result.image,
+          cloudinaryId: result.image.cloudinaryId || result.image.filename
+        };
+        
+        setUploadedImages(prev => [newImage, ...prev]);
+        setUploadStatus({ type: 'success', message: 'Image uploadée vers Cloudinary ! Elle sera synchronisée localement prochainement.' });
         
         // Réinitialiser l'input file
         if (fileInputRef.current) {

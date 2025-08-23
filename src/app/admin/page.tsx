@@ -10,6 +10,7 @@ import ApiTest from '../components/ApiTest';
 import AdminImageUpload from '@/components/ui/AdminImageUpload';
 import AdminImageDisplay from '@/components/ui/AdminImageDisplay';
 import AdminImageManager from '@/components/ui/AdminImageManager';
+import LocalImagesDisplay from '@/components/ui/LocalImagesDisplay';
 import { 
   Package, 
   Tag, 
@@ -31,7 +32,9 @@ import {
   Clock,
   Wifi,
   X,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Upload,
+  RefreshCw
 } from 'lucide-react';
 
 interface DashboardStats {
@@ -1676,21 +1679,37 @@ export default function AdminDashboard() {
               <span>🧪 Tester</span>
             </a>
             <a
-              href="/migrate-images"
+              href="/admin/cloudinary-preview"
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+            >
+              <span>☁️ Cloudinary</span>
+            </a>
+            <a
+              href="/admin/images"
               className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
             >
-              <span>🚀 Migrer</span>
+              <span>📤 Upload</span>
             </a>
           </div>
         </div>
 
+        {/* Section des images synchronisées */}
         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+          <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+            <ImageIcon className="w-5 h-5 mr-2" />
+            Images Synchronisées Localement
+          </h3>
+          <LocalImagesDisplay />
+        </div>
+
+        {/* Section de gestion des images */}
+        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+          <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+            <Upload className="w-5 h-5 mr-2" />
+            Gestion des Images
+          </h3>
           <AdminImageManager />
         </div>
-        
-
-        
-
       </div>
     );
   };

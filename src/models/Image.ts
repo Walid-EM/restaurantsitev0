@@ -4,7 +4,8 @@ export interface IImage extends mongoose.Document {
   filename: string;
   originalName: string;
   contentType: string;
-  filePath: string;        // Chemin vers le fichier sur le disque
+  filePath: string;        // Maintenant URL Cloudinary
+  cloudinaryId: string;    // Nouveau champ
   size: number;
   uploadedAt: Date;
 }
@@ -26,6 +27,11 @@ const imageSchema = new mongoose.Schema<IImage>({
   filePath: {
     type: String,
     required: [true, 'Le chemin du fichier est requis'],
+  },
+  cloudinaryId: {          // Nouveau champ
+    type: String,
+    required: [true, 'L\'ID Cloudinary est requis'],
+    unique: true,
   },
   size: {
     type: Number,

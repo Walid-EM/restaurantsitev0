@@ -3,32 +3,25 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 
-interface MongoImageProps {
-  imageId: string;
+interface AdminCloudinaryImageProps {
+  cloudinaryUrl: string;
   alt?: string;
   className?: string;
   fallback?: React.ReactNode;
   onLoad?: () => void;
   onError?: () => void;
-  filePath?: string;        // Maintenant URL Cloudinary
-  cloudinaryId?: string;    // Nouveau champ optionnel
 }
 
-export default function MongoImage({
-  imageId,
-  alt = 'Image',
+export default function AdminCloudinaryImage({
+  cloudinaryUrl,
+  alt = 'Image Cloudinary',
   className = '',
   fallback,
   onLoad,
   onError,
-  filePath,
-  cloudinaryId
-}: MongoImageProps) {
+}: AdminCloudinaryImageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-
-  // Log de débogage (commenté pour éviter le spam)
-  // console.log('MongoImage props:', { imageId, filePath, alt });
 
   const handleLoad = () => {
     setIsLoading(false);
@@ -42,35 +35,18 @@ export default function MongoImage({
     onError?.();
   };
 
-  // Priorité : 1. Image locale synchronisée, 2. API locale
-  let imageSrc = '';
-  
-  if (filePath && filePath.startsWith('/public/images/')) {
-    // Image locale synchronisée depuis Cloudinary
-    imageSrc = filePath.replace('/public/images/', '/images/');
-  } else if (imageId && imageId !== 'undefined') {
-    // Fallback vers l'API locale
-    imageSrc = `/api/images/${imageId}`;
-  }
-  
-  // Log de débogage (commenté pour éviter le spam)
-  // console.log('MongoImage imageSrc:', imageSrc);
-
-  if (hasError || !imageSrc) {
+  if (hasError) {
     return fallback ? (
       <>{fallback}</>
     ) : (
       <div className={`bg-gray-200 flex items-center justify-center ${className}`}>
         <div className="text-gray-500 text-center">
           <div className="text-2xl mb-1">🖼️</div>
-          <p className="text-sm">Image non disponible</p>
+          <p className="text-sm">Image Cloudinary non disponible</p>
         </div>
       </div>
     );
   }
-  
-  // Log de débogage (commenté pour éviter le spam)
-  // console.log('MongoImage imageSrc:', imageSrc);
 
   return (
     <div className="relative">
@@ -87,13 +63,19 @@ export default function MongoImage({
       )}
       
       <motion.img
-        src={imageSrc}
+        src={cloudinaryUrl}
         alt={alt}
         className={`${className} ${isLoading ? 'opacity-0' : 'opacity-100'}`}
         onLoad={handleLoad}
         onError={handleError}
         style={{ transition: 'opacity 0.3s ease-in-out' }}
       />
+      
+      {!isLoading && (
+        <div className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">
+          Cloudinary
+        </div>
+      )}
     </div>
   );
 }
