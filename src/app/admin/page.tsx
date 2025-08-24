@@ -11,6 +11,7 @@ import AdminImageDisplay from '@/components/ui/AdminImageDisplay';
 import ImageOptimizationInfo from '@/components/ui/ImageOptimizationInfo';
 import SharpTest from '@/components/ui/SharpTest';
 import SharpSimpleTest from '@/components/ui/SharpSimpleTest';
+import ClientResizeTest from '@/components/ui/ClientResizeTest';
 import ImageUploadStats from '@/components/ui/ImageUploadStats';
 
 import LocalImagesDisplay from '@/components/ui/LocalImagesDisplay';
@@ -204,6 +205,53 @@ export default function AdminDashboard() {
     }
   };
 
+  // Fonction de redimensionnement côté client pour éviter l'erreur 413
+  const resizeImageClientSide = (file: File, maxSizeMB: number = 4.5): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new window.Image();
+      
+      img.onload = () => {
+        const currentSizeMB = file.size / (1024 * 1024);
+        if (currentSizeMB <= maxSizeMB) {
+          // Image déjà dans la limite
+          resolve(file);
+          return;
+        }
+        
+        // Calculer le ratio de réduction
+        const reductionRatio = Math.sqrt(maxSizeMB / currentSizeMB) * 0.9; // Marge de sécurité
+        const newWidth = Math.round(img.width * reductionRatio);
+        const newHeight = Math.round(img.height * reductionRatio);
+        
+        // Redimensionner
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+        
+        // Dessiner l'image redimensionnée
+        ctx?.drawImage(img, 0, 0, newWidth, newHeight);
+        
+        // Convertir en Blob puis File
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const resizedFile = new File([blob], file.name, {
+              type: file.type,
+              lastModified: Date.now()
+            });
+            console.log(`🔄 Image redimensionnée côté client: ${(file.size / 1024 / 1024).toFixed(2)} MB → ${(resizedFile.size / 1024 / 1024).toFixed(2)} MB`);
+            resolve(resizedFile);
+          } else {
+            reject(new Error('Erreur lors de la conversion du canvas'));
+          }
+        }, 'image/jpeg', 0.85); // Qualité 85%
+      };
+      
+      img.onerror = () => reject(new Error('Erreur lors du chargement de l\'image'));
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
   // Gestion de la sélection multiple d'images
   const handleFileSelection = (files: FileList | null) => {
     if (!files) return;
@@ -217,14 +265,14 @@ export default function AdminDashboard() {
       return isValidSize;
     });
     
-          if (validFiles.length === 0) {
-        alert('⚠️ Tous les fichiers sélectionnés dépassent la limite de 4MB autorisée par Vercel.');
-        return;
-      }
-      
-      if (validFiles.length < files.length) {
-        alert(`⚠️ ${files.length - validFiles.length} fichier(s) ignoré(s) car trop volumineux (>4MB).`);
-      }
+    if (validFiles.length === 0) {
+      alert('⚠️ Tous les fichiers sélectionnés dépassent la limite de 4MB autorisée par Vercel.');
+      return;
+    }
+    
+    if (validFiles.length < files.length) {
+      alert(`⚠️ ${files.length - validFiles.length} fichier(s) ignoré(s) car trop volumineux (>4MB).`);
+    }
     
     const newPendingImages: PendingImage[] = validFiles.map(file => ({
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -275,9 +323,29 @@ export default function AdminDashboard() {
         try {
           console.log(`📁 Upload fichier ${i + 1}/${pendingImages.length}: ${pendingImage.file.name}`);
           
+          // Redimensionner l'image côté client si elle est trop grande
+          let processedFile = pendingImage.file;
+          if (pendingImage.file.size > 4.5 * 1024 * 1024) { // Plus de 4.5 MB
+            console.log(`🔄 Redimensionnement côté client de ${pendingImage.file.name} (${(pendingImage.file.size / 1024 / 1024).toFixed(2)} MB)`);
+            try {
+              processedFile = await resizeImageClientSide(pendingImage.file, 4.5);
+              console.log(`✅ Redimensionnement terminé: ${(processedFile.size / 1024 / 1024).toFixed(2)} MB`);
+              
+              // Mettre à jour les statistiques avec la taille redimensionnée
+              setUploadStats(prev => prev.map(stat => 
+                stat.fileName === pendingImage.file.name 
+                  ? { ...stat, optimizedSize: processedFile.size }
+                  : stat
+              ));
+            } catch (error) {
+              console.error('Erreur redimensionnement côté client:', error);
+              // Continuer avec le fichier original en cas d'erreur
+            }
+          }
+          
           // Upload individuel pour chaque fichier
           const formData = new FormData();
-          formData.append('image', pendingImage.file);
+          formData.append('image', processedFile);
           
           const response = await fetch('/api/admin/upload-to-git', {
             method: 'POST',
@@ -302,13 +370,17 @@ export default function AdminDashboard() {
               console.log(`✅ Succès: ${pendingImage.file.name}`);
               
               // Mettre à jour les statistiques avec les données de redimensionnement
+              const actualOptimizedSize = result.optimizedSize || processedFile.size;
+              const actualSizeReduction = pendingImage.file.size > actualOptimizedSize ? 
+                `${((1 - actualOptimizedSize / pendingImage.file.size) * 100).toFixed(1)}%` : '0%';
+              
               setUploadStats(prev => prev.map(stat => 
                 stat.fileName === pendingImage.file.name 
                   ? {
                       ...stat,
                       status: 'success' as const,
-                      optimizedSize: result.optimizedSize || pendingImage.file.size,
-                      sizeReduction: result.sizeReduction || '0%'
+                      optimizedSize: actualOptimizedSize,
+                      sizeReduction: actualSizeReduction
                     }
                   : stat
               ));
@@ -2126,9 +2198,13 @@ export default function AdminDashboard() {
             <SharpTest />
           </div>
 
-          <div className="mt-6 lg:mt-8">
-            <SharpSimpleTest />
-          </div>
+                          <div className="mt-6 lg:mt-8">
+                  <SharpSimpleTest />
+                </div>
+                
+                <div className="mt-6 lg:mt-8">
+                  <ClientResizeTest />
+                </div>
           
           {/* Zone d'upload multiple optimisée pour tactile */}
           <div className="border-3 border-dashed border-gray-300 rounded-2xl p-8 lg:p-10 text-center">
