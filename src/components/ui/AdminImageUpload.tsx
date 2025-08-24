@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, X, Image as ImageIcon, Plus } from 'lucide-react';
 import MongoImage from './MongoImage';
@@ -44,12 +44,62 @@ export default function AdminImageUpload({
   label = 'Image',
   required = false
 }: AdminImageUploadProps) {
-  const [isUploading, setIsUploading] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({});
+  const [showUploadModal, setShowUploadModal] = useState(false);
   const [showImageSelector, setShowImageSelector] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [isLoadingImages, setIsLoadingImages] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Fonction de redimensionnement côté client pour éviter l'erreur 413
+  const resizeImageClientSide = (file: File, maxSizeMB: number = 4.5): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Calculer les nouvelles dimensions
+        const currentSizeMB = file.size / (1024 * 1024);
+        if (currentSizeMB <= maxSizeMB) {
+          // Image déjà dans la limite
+          resolve(file);
+          return;
+        }
+        
+        // Calculer le ratio de réduction
+        const reductionRatio = Math.sqrt(maxSizeMB / currentSizeMB) * 0.9; // Marge de sécurité
+        const newWidth = Math.round(img.width * reductionRatio);
+        const newHeight = Math.round(img.height * reductionRatio);
+        
+        // Redimensionner
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+        
+        // Dessiner l'image redimensionnée
+        ctx?.drawImage(img, 0, 0, newWidth, newHeight);
+        
+        // Convertir en Blob puis File
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const resizedFile = new File([blob], file.name, {
+              type: file.type,
+              lastModified: Date.now()
+            });
+            console.log(`🔄 Image redimensionnée côté client: ${(file.size / 1024 / 1024).toFixed(2)} MB → ${(resizedFile.size / 1024 / 1024).toFixed(2)} MB`);
+            resolve(resizedFile);
+          } else {
+            reject(new Error('Erreur lors de la conversion du canvas'));
+          }
+        }, 'image/jpeg', 0.85); // Qualité 85%
+      };
+      
+      img.onerror = () => reject(new Error('Erreur lors du chargement de l\'image'));
+      img.src = URL.createObjectURL(file);
+    });
+  };
 
   // Charger toutes les images au démarrage
   useEffect(() => {
@@ -88,10 +138,18 @@ export default function AdminImageUpload({
       return;
     }
 
-    // Vérifier la taille (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setUploadStatus({ type: 'error', message: 'Le fichier est trop volumineux (max 5MB)' });
-      return;
+    // Redimensionner l'image côté client si elle est trop grande
+    let processedFile = file;
+    if (file.size > 4.5 * 1024 * 1024) { // Plus de 4.5 MB
+      console.log(`🔄 Redimensionnement côté client de ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
+      try {
+        processedFile = await resizeImageClientSide(file, 4.5);
+        console.log(`✅ Redimensionnement terminé: ${(processedFile.size / 1024 / 1024).toFixed(2)} MB`);
+      } catch (error) {
+        console.error('Erreur redimensionnement côté client:', error);
+        setUploadStatus({ type: 'error', message: 'Erreur lors du redimensionnement de l\'image' });
+        return;
+      }
     }
 
     setIsUploading(true);
@@ -99,7 +157,7 @@ export default function AdminImageUpload({
 
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', processedFile);
 
       const response = await fetch('/api/upload', {
         method: 'POST',
