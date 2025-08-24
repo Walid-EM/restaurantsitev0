@@ -10,6 +10,7 @@ import ApiTest from '../components/ApiTest';
 import AdminImageDisplay from '@/components/ui/AdminImageDisplay';
 import ImageOptimizationInfo from '@/components/ui/ImageOptimizationInfo';
 import SharpTest from '@/components/ui/SharpTest';
+import SharpSimpleTest from '@/components/ui/SharpSimpleTest';
 import ImageUploadStats from '@/components/ui/ImageUploadStats';
 
 import LocalImagesDisplay from '@/components/ui/LocalImagesDisplay';
@@ -2121,8 +2122,12 @@ export default function AdminDashboard() {
           </div>
           
           {/* Test de Sharp */}
-          <div className="mb-6 lg:mb-8">
+          <div className="mt-6 lg:mt-8">
             <SharpTest />
+          </div>
+
+          <div className="mt-6 lg:mt-8">
+            <SharpSimpleTest />
           </div>
           
           {/* Zone d'upload multiple optimisée pour tactile */}
