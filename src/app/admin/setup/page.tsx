@@ -172,10 +172,10 @@ export default function AdminSetup() {
 
         <div className="text-center">
           <p className="text-gray-400 text-sm">
-            ⚠️ Cette page ne sera accessible qu&apos;une seule fois
+            ⚠️ Cette page ne sera accessible qu&apos;une seule fois.
           </p>
           <p className="text-gray-500 text-xs mt-1">
-            Après la création, utilisez la page de connexion
+            Après la création, utilisez la page de connexion.
           </p>
         </div>
       </div>
