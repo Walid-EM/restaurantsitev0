@@ -9,6 +9,7 @@ import { adminApiGet, adminApiPost, adminApiPut, adminApiDelete, adminApiReorder
 import ApiTest from '../components/ApiTest';
 import AdminImageDisplay from '@/components/ui/AdminImageDisplay';
 import ImageOptimizationInfo from '@/components/ui/ImageOptimizationInfo';
+import SharpTest from '@/components/ui/SharpTest';
 
 import LocalImagesDisplay from '@/components/ui/LocalImagesDisplay';
 import { 
@@ -2051,6 +2052,11 @@ export default function AdminDashboard() {
           {/* Information sur l'optimisation automatique */}
           <div className="mb-6 lg:mb-8">
             <ImageOptimizationInfo />
+          </div>
+          
+          {/* Test de Sharp */}
+          <div className="mb-6 lg:mb-8">
+            <SharpTest />
           </div>
           
           {/* Zone d'upload multiple optimisée pour tactile */}
