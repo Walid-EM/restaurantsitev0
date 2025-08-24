@@ -12,166 +12,11 @@ export const config = {
   },
 };
 
-// Fonction de redimensionnement automatique
-async function resizeImageIfNeeded(buffer: Buffer, maxSizeBytes: number = 4.5 * 1024 * 1024): Promise<Buffer> {
-  try {
-    console.log(`🔍 Vérification de la taille: ${(buffer.length / 1024 / 1024).toFixed(2)} MB`);
-    console.log(`🎯 Limite cible: ${(maxSizeBytes / 1024 / 1024).toFixed(2)} MB`);
-    
-    // Import dynamique de Sharp (comme dans l'API de test qui fonctionne)
-    let sharp;
-    try {
-      sharp = await import('sharp');
-      console.log('✅ Import Sharp réussi');
-    } catch (importError) {
-      console.error('❌ Erreur import Sharp:', importError);
-      return buffer;
-    }
-    
-    // Vérifier que Sharp est disponible
-    if (typeof sharp.default === 'undefined') {
-      console.error('❌ Sharp.default non disponible');
-      console.error('❌ Type de sharp:', typeof sharp);
-      return buffer;
-    }
-    
-    console.log('✅ Sharp est disponible');
-    console.log('✅ Version Sharp:', sharp.default.versions?.sharp || 'Version inconnue');
-    
-    // Vérifier la taille actuelle
-    if (buffer.length <= maxSizeBytes) {
-      console.log(`✅ Image déjà dans la limite (${(buffer.length / 1024 / 1024).toFixed(2)} MB)`);
-      return buffer;
-    }
-
-    console.log(`🔄 Redimensionnement nécessaire: ${(buffer.length / 1024 / 1024).toFixed(2)} MB > ${(maxSizeBytes / 1024 / 1024).toFixed(2)} MB`);
-
-    // Analyser l'image
-    console.log('📊 Analyse des métadonnées...');
-    let image;
-    try {
-      image = sharp.default(buffer);
-      console.log('✅ Image Sharp créée avec succès');
-    } catch (sharpError) {
-      console.error('❌ Erreur création image Sharp:', sharpError);
-      return buffer;
-    }
-    
-    let metadata;
-    try {
-      metadata = await image.metadata();
-      console.log('✅ Métadonnées récupérées avec succès');
-    } catch (metadataError) {
-      console.error('❌ Erreur récupération métadonnées:', metadataError);
-      return buffer;
-    }
-    
-    if (!metadata.width || !metadata.height) {
-      console.log('⚠️ Impossible de lire les métadonnées, retour de l\'image originale');
-      console.log('📊 Métadonnées reçues:', metadata);
-      return buffer;
-    }
-
-    console.log(`📐 Dimensions originales: ${metadata.width}x${metadata.height}`);
-    console.log(`🎨 Format: ${metadata.format}`);
-    console.log(`🌈 Espace colorimétrique: ${metadata.space}`);
-
-    // Calculer le ratio de réduction nécessaire
-    const currentSizeMB = buffer.length / 1024 / 1024;
-    const targetSizeMB = maxSizeBytes / 1024 / 1024;
-    const reductionRatio = Math.sqrt(targetSizeMB / currentSizeMB);
-    
-    // Appliquer une marge de sécurité (90% de la taille cible)
-    const safeReductionRatio = reductionRatio * 0.9;
-    
-    const newWidth = Math.round(metadata.width * safeReductionRatio);
-    const newHeight = Math.round(metadata.height * safeReductionRatio);
-
-    console.log(`🎯 Ratio de réduction calculé: ${reductionRatio.toFixed(3)}`);
-    console.log(`🛡️ Ratio avec marge de sécurité: ${safeReductionRatio.toFixed(3)}`);
-    console.log(`📐 Nouvelles dimensions: ${newWidth}x${newHeight}`);
-
-    // Redimensionner l'image avec une qualité optimisée
-    console.log('🔄 Premier redimensionnement (qualité 85%)...');
-    let resizedBuffer;
-    
-    try {
-      resizedBuffer = await image
-        .resize(newWidth, newHeight, {
-          fit: 'inside',
-          withoutEnlargement: true
-        })
-        .jpeg({ 
-          quality: 85, // Qualité JPEG optimale
-          progressive: true 
-        })
-        .png({ 
-          quality: 85, // Qualité PNG optimale
-          progressive: true 
-        })
-        .webp({ 
-          quality: 85, // Qualité WebP optimale
-          effort: 4 // Niveau de compression
-        })
-        .toBuffer();
-      
-      console.log('✅ Premier redimensionnement réussi');
-    } catch (resizeError) {
-      console.error('❌ Erreur premier redimensionnement:', resizeError);
-      console.error('❌ Stack trace:', resizeError instanceof Error ? resizeError.stack : 'Pas de stack trace');
-      return buffer;
-    }
-
-    const firstPassSizeMB = resizedBuffer.length / 1024 / 1024;
-    console.log(`📊 Taille après premier passage: ${firstPassSizeMB.toFixed(2)} MB`);
-    console.log(`📉 Réduction: ${((1 - firstPassSizeMB / currentSizeMB) * 100).toFixed(1)}%`);
-
-    // Vérifier si le redimensionnement a suffi
-    if (resizedBuffer.length > maxSizeBytes) {
-      console.log(`⚠️ Premier redimensionnement insuffisant: ${firstPassSizeMB.toFixed(2)} MB > ${(maxSizeBytes / 1024 / 1024).toFixed(2)} MB`);
-      
-      console.log('🔄 Deuxième redimensionnement (qualité 70%)...');
-      try {
-        // Réduire encore plus la qualité
-        resizedBuffer = await sharp.default(resizedBuffer)
-          .jpeg({ quality: 70 })
-          .png({ quality: 70 })
-          .webp({ quality: 70 })
-          .toBuffer();
-        
-        console.log('✅ Deuxième redimensionnement réussi');
-      } catch (secondPassError) {
-        console.error('❌ Erreur deuxième redimensionnement:', secondPassError);
-        console.error('❌ Stack trace:', secondPassError instanceof Error ? secondPassError.stack : 'Pas de stack trace');
-        // Continuer avec le premier résultat
-      }
-      
-      const secondPassSizeMB = resizedBuffer.length / 1024 / 1024;
-      console.log(`📊 Taille après deuxième passage: ${secondPassSizeMB.toFixed(2)} MB`);
-      console.log(`📉 Réduction totale: ${((1 - secondPassSizeMB / currentSizeMB) * 100).toFixed(1)}%`);
-    }
-
-    const finalSizeMB = resizedBuffer.length / 1024 / 1024;
-    console.log(`✅ Redimensionnement terminé: ${finalSizeMB.toFixed(2)} MB (réduction: ${((1 - finalSizeMB / currentSizeMB) * 100).toFixed(1)}%)`);
-    console.log(`🎯 Limite respectée: ${resizedBuffer.length <= maxSizeBytes ? '✅ OUI' : '❌ NON'}`);
-
-    return resizedBuffer;
-
-  } catch (error) {
-    console.error('❌ Erreur lors du redimensionnement:', error);
-    console.error('❌ Détails de l\'erreur:', error instanceof Error ? error.stack : 'Erreur inconnue');
-    console.log('⚠️ Retour de l\'image originale');
-    return buffer;
-  }
-}
+// Fonction supprimée - Le redimensionnement se fait maintenant côté client
 
 export async function POST(request: NextRequest) {
   try {
     console.log('🚀 API upload-to-git appelée');
-    
-    // TEST DIAGNOSTIC : Vérifier Sharp immédiatement
-    console.log('🔍 DIAGNOSTIC SHARP:');
-    console.log('🔍 Sharp sera importé dynamiquement dans resizeImageIfNeeded');
     
     // Vérifier les variables d'environnement
     if (!process.env.GITHUB_ACCESS_TOKEN || !process.env.GITHUB_OWNER || !process.env.GITHUB_REPO) {
@@ -207,14 +52,20 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer());
     console.log(`📊 Buffer créé: ${(buffer.length / 1024 / 1024).toFixed(2)} MB`);
     
-    // Redimensionner automatiquement si nécessaire
-    console.log('🔄 Début du redimensionnement automatique...');
-    const optimizedBuffer = await resizeImageIfNeeded(buffer);
-    console.log(`📊 Buffer optimisé: ${(optimizedBuffer.length / 1024 / 1024).toFixed(2)} MB`);
+    // L'image est déjà redimensionnée côté client si nécessaire
+    // Utiliser directement le buffer reçu (plus de redimensionnement côté serveur)
+    const optimizedBuffer = buffer;
+    console.log(`📊 Buffer utilisé directement: ${(optimizedBuffer.length / 1024 / 1024).toFixed(2)} MB`);
     
-    // Vérifier que le redimensionnement a fonctionné
+    // Vérifier que la taille est acceptable
     if (optimizedBuffer.length > 4.5 * 1024 * 1024) {
-      console.warn(`⚠️ Attention: L'image optimisée fait encore ${(optimizedBuffer.length / 1024 / 1024).toFixed(2)} MB`);
+      console.warn(`⚠️ Attention: L'image fait encore ${(optimizedBuffer.length / 1024 / 1024).toFixed(2)} MB`);
+      // Retourner une erreur car l'image devrait être redimensionnée côté client
+      return NextResponse.json({ 
+        error: 'Image trop volumineuse. Redimensionnez côté client avant l\'upload.',
+        originalSize: file.size,
+        currentSize: optimizedBuffer.length
+      }, { status: 400 });
     }
     
     // Générer un ID unique
