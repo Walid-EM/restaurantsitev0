@@ -232,19 +232,22 @@ export default function AdminDashboard() {
         // Dessiner l'image redimensionnée
         ctx?.drawImage(img, 0, 0, newWidth, newHeight);
         
-        // Convertir en Blob puis File
+        // Convertir en Blob puis File - Préserver le format original et la transparence
+        const outputFormat = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+        const outputQuality = file.type === 'image/png' ? 1.0 : 0.85; // PNG sans compression, JPEG avec qualité
+        
         canvas.toBlob((blob) => {
           if (blob) {
             const resizedFile = new File([blob], file.name, {
-              type: file.type,
+              type: outputFormat, // Garder le type original
               lastModified: Date.now()
             });
-            console.log(`🔄 Image redimensionnée côté client: ${(file.size / 1024 / 1024).toFixed(2)} MB → ${(resizedFile.size / 1024 / 1024).toFixed(2)} MB`);
+            console.log(`🔄 Image redimensionnée côté client: ${(file.size / 1024 / 1024).toFixed(2)} MB → ${(resizedFile.size / 1024 / 1024).toFixed(2)} MB (Format: ${outputFormat})`);
             resolve(resizedFile);
           } else {
             reject(new Error('Erreur lors de la conversion du canvas'));
           }
-        }, 'image/jpeg', 0.85); // Qualité 85%
+        }, outputFormat, outputQuality);
       };
       
       img.onerror = () => reject(new Error('Erreur lors du chargement de l\'image'));
