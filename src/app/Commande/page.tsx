@@ -221,6 +221,7 @@ export default function CommandePage() {
   useEffect(() => {
     fetchDynamicData();
     fetchCategoryOptions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Fonction pour gérer la diminution de quantité avec confirmation
@@ -592,7 +593,7 @@ export default function CommandePage() {
         observerRef.current.disconnect();
       }
     };
-  }, [dynamicCategories, isLoading]); // Ajouter isLoading pour attendre la fin du chargement
+  }, [dynamicCategories, isLoading, activeCategory]); // Ajouter isLoading pour attendre la fin du chargement
 
   // Auto-scroll mobile pour centrer l'élément actif
   useEffect(() => {

@@ -551,6 +551,7 @@ export default function MainPageCommand1({ commands }: Props) {
 
         loadData();
         fetchCategoryOptions();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     
     // Fonction pour charger les options de catégories (comme dans /Commande)
@@ -980,6 +981,7 @@ export default function MainPageCommand1({ commands }: Props) {
                 sauces: null
             });
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, selectedCommand]);
 
     return (

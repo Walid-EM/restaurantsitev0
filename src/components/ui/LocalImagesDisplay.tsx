@@ -105,14 +105,14 @@ export default function LocalImagesDisplay() {
           <ImageIcon className="w-12 h-12 text-gray-500 mx-auto mb-3" />
           <p className="text-gray-400 mb-2">Aucune image synchronisée</p>
           <p className="text-sm text-gray-500">
-            Utilisez la page Cloudinary pour synchroniser des images depuis Cloudinary
+            Utilisez le nouveau gestionnaire Git pour ajouter des images
           </p>
           <a
-            href="/admin/cloudinary-preview"
+            href="/admin/git-images"
             className="inline-flex items-center mt-3 px-4 py-2 bg-blue-500/20 text-blue-300 rounded-lg hover:bg-blue-500/30 transition-colors"
           >
             <ExternalLink className="w-4 h-4 mr-2" />
-            Aller à Cloudinary
+            🚀 Gestionnaire Git
           </a>
         </div>
       ) : (
@@ -163,7 +163,7 @@ export default function LocalImagesDisplay() {
         <ul className="text-sm text-blue-200 space-y-1">
           <li>• Les images synchronisées sont stockées dans <code className="bg-blue-500/20 px-1 rounded">/public/images/uploads/</code></li>
           <li>• Elles sont accessibles via le composant <code className="bg-blue-500/20 px-1 rounded">MongoImage</code></li>
-          <li>• Utilisez le bouton "Actualiser" pour voir les nouvelles images synchronisées</li>
+          <li>• Utilisez le bouton {'"'}Actualiser{'"'} pour voir les nouvelles images synchronisées</li>
           <li>• Les images sont servies localement pour de meilleures performances</li>
         </ul>
       </div>

@@ -33,10 +33,10 @@ export default function AdminNavigation() {
       description: 'Guide de migration'
     },
     {
-      name: 'Prévisualisation Cloudinary',
-      href: '/admin/cloudinary-preview',
+      name: 'Gestionnaire Git',
+      href: '/admin/git-images',
       icon: Eye,
-      description: 'Voir depuis Cloudinary'
+      description: 'Gestion des images Git'
     },
     {
       name: 'Configuration',

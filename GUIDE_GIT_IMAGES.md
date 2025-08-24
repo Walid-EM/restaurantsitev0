@@ -1,4 +1,4 @@
-# 🚀 Guide de Migration : Cloudinary → Système Git
+# 🚀 Guide du Système Git pour Images
 
 ## 📋 **Table des Matières**
 
@@ -18,10 +18,11 @@
 
 ### **Objectif de la Migration**
 Remplacer le système Cloudinary par un système basé sur **Git** qui :
-- ✅ Stocke les images directement dans le projet local
-- ✅ Synchronise automatiquement avec le repository distant
+- ✅ Upload les images directement vers le repository Git (parfait pour Vercel)
+- ✅ Génère des IDs uniques pour chaque image
+- ✅ Synchronise immédiatement avec le repository distant
 - ✅ Conserve une UX simple et intuitive
-- ✅ Élimine la dépendance aux services tiers
+- ✅ Élimine la dépendance aux services tiers ET au stockage local persistant
 
 ### **Avantages de la Migration**
 - 🚀 **Contrôle total** : Plus de dépendance à Cloudinary
@@ -51,40 +52,37 @@ Interface Admin → Cloudinary → Synchronisation → /public/images/uploads/ �
 - `AdminCloudinaryImage` - Prévisualisation Cloudinary
 - API `/api/admin/sync-cloudinary-images` - Synchronisation
 
-### **Nouvelle Architecture (Git)**
+### **Nouvelle Architecture (Git) - Version Vercel**
 ```
-Interface Admin → Stockage Local → Git Commit → Git Push → Repository → Affichage Public
+Interface Admin → Upload Direct → API GitHub → Repository Git → Affichage Public
 ```
 
+**⚠️ IMPORTANT :** Cette architecture est spécialement conçue pour Vercel où il n'y a pas de stockage local persistant.
+
 **Nouveaux composants :**
-- `GitImageManager` - Gestion des images locales
-- `GitImageList` - Affichage des images du repo
-- `GitImagePreview` - Prévisualisation locale
-- API `/api/admin/git-sync` - Synchronisation Git
+- `GitImageManager` - Gestion des images avec upload direct vers Git
+- `GitImageList` - Affichage des images du repository
+- `GitImagePreview` - Prévisualisation depuis le repository
+- API `/api/admin/upload-to-git` - Upload direct vers GitHub
+- API `/api/admin/delete-from-git` - Suppression depuis GitHub
 
 ---
 
-## 📋 **Plan de Migration**
+## 📋 **Plan de Développement**
 
-### **Phase 1 : Préparation**
-1. **Sauvegarde** des images Cloudinary existantes
-2. **Création** de la nouvelle structure de dossiers
-3. **Migration** des images vers le système local
-
-### **Phase 2 : Développement**
+### **Phase 1 : Développement**
 1. **Création** des nouveaux composants Git
 2. **Modification** des composants existants
 3. **Implémentation** des API Git
 
-### **Phase 3 : Test et Validation**
+### **Phase 2 : Test et Validation**
 1. **Tests** de l'interface admin
 2. **Validation** du workflow Git
 3. **Tests** d'affichage public
 
-### **Phase 4 : Déploiement**
-1. **Migration** des données
-2. **Déploiement** en production
-3. **Nettoyage** de l'ancien système
+### **Phase 3 : Déploiement**
+1. **Déploiement** en production
+2. **Configuration** des variables d'environnement
 
 ---
 
@@ -95,195 +93,329 @@ Interface Admin → Stockage Local → Git Commit → Git Push → Repository �
 ```
 public/
   └── images/
-      ├── uploads/           # Images uploadées via l'admin
-      ├── products/          # Images des produits
-      ├── categories/        # Images des catégories
-      └── .gitkeep          # Garde le dossier dans Git
+      └── uploads/           # Toutes les images uploadées via l'admin
+```
 
 src/
   └── components/
       └── ui/
-          ├── GitImageManager.tsx      ← Nouveau composant
-          ├── GitImageList.tsx         ← Nouveau composant
-          ├── GitImagePreview.tsx      ← Nouveau composant
-          ├── GitSyncButton.tsx        ← Nouveau composant
+          ├── GitImageManager.tsx      ← Nouveau composant (upload direct vers Git)
+          ├── GitImageList.tsx         ← Nouveau composant (affichage depuis Git)
+          ├── GitImagePreview.tsx      ← Nouveau composant (prévisualisation Git)
           └── ... (composants existants modifiés)
+
+src/
+  └── app/
+      └── api/
+          └── admin/
+                 ├── upload-to-git/       ← API upload direct vers GitHub (toutes dans uploads/)
+               └── delete-from-git/     ← API suppression depuis GitHub
 ```
 
 ### **2. Nouveaux Composants React**
 
-#### **`GitImageManager.tsx`**
+#### **`GitImageManager.tsx` - Version Vercel (Upload Direct vers Git)**
 ```tsx
 'use client';
 
 import { useState, useRef } from 'react';
-import { Upload, Trash2, GitBranch, CheckCircle } from 'lucide-react';
+import { Upload, Trash2, GitBranch, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 
-interface GitImageManagerProps {
-  onImagesChange: (images: LocalImage[]) => void;
+interface GitImage {
+  imageId: string;
+  fileName: string;
+  gitPath: string;
+  githubUrl?: string;
+  category: string;
+  uploadDate: Date;
 }
 
-export default function GitImageManager({ onImagesChange }: GitImageManagerProps) {
-  const [images, setImages] = useState<LocalImage[]>([]);
+export default function GitImageManager() {
+  const [images, setImages] = useState<GitImage[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [gitStatus, setGitStatus] = useState<'clean' | 'dirty' | 'syncing'>('clean');
+  const [uploadStatus, setUploadStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Gestion des uploads d'images
+  // Gestion des uploads d'images DIRECTEMENT vers Git
   const handleFileUpload = async (file: File) => {
-    // Logique d'upload vers /public/images/uploads/
-    // Mise à jour du statut Git
+    setIsUploading(true);
+    setUploadStatus('idle');
+    
+    try {
+             // 1. Créer FormData avec le fichier
+       const formData = new FormData();
+       formData.append('image', file);
+       // Toutes les images vont dans uploads/
+      
+      // 2. Upload direct vers Git via l'API GitHub
+      const response = await fetch('/api/admin/upload-to-git', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        
+        // 3. Ajouter l'image à la liste locale
+                 const newImage: GitImage = {
+           imageId: result.imageId,
+           fileName: result.fileName,
+           gitPath: result.gitPath,
+           githubUrl: result.githubUrl,
+           category: 'uploads', // Toutes les images sont dans uploads/
+           uploadDate: new Date()
+         };
+        
+        setImages(prev => [...prev, newImage]);
+        setUploadStatus('success');
+        
+        console.log('✅ Image ajoutée au repository Git:', newImage);
+      } else {
+        setUploadStatus('error');
+      }
+    } catch (error) {
+      setUploadStatus('error');
+      console.error('❌ Erreur upload:', error);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
-  // Suppression d'images
-  const handleImageDelete = async (imagePath: string) => {
-    // Suppression du fichier local
-    // Mise à jour du statut Git
+  // Suppression d'images depuis Git
+  const handleImageDelete = async (imageId: string) => {
+    try {
+      const image = images.find(img => img.imageId === imageId);
+      if (!image) return;
+      
+      // Supprimer l'image du repository Git
+      const response = await fetch('/api/admin/delete-from-git', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          imageId,
+          filePath: image.gitPath 
+        })
+      });
+      
+      if (response.ok) {
+        setImages(prev => prev.filter(img => img.imageId !== imageId));
+        console.log('✅ Image supprimée du repository Git');
+      }
+    } catch (error) {
+      console.error('❌ Erreur suppression:', error);
+    }
   };
 
   return (
     <div className="space-y-6">
-      {/* Interface de gestion des images */}
-      {/* Bouton de synchronisation Git */}
+      {/* Zone d'upload */}
+      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) handleFileUpload(file);
+          }}
+          className="hidden"
+        />
+        
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isUploading}
+          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+        >
+          {isUploading ? (
+            <RefreshCw className="w-5 h-5 animate-spin inline mr-2" />
+          ) : (
+            <Upload className="w-5 h-5 inline mr-2" />
+          )}
+          {isUploading ? 'Upload en cours...' : '📁 Sélectionner une image'}
+        </button>
+        
+        {/* Status de l'upload */}
+        {uploadStatus === 'success' && (
+          <div className="mt-4 p-3 bg-green-100 text-green-800 rounded-lg">
+            ✅ Image ajoutée au repository Git avec succès !
+          </div>
+        )}
+        
+        {uploadStatus === 'error' && (
+          <div className="mt-4 p-3 bg-red-100 text-red-800 rounded-lg">
+            ❌ Erreur lors de l'ajout de l'image
+          </div>
+        )}
+      </div>
+
+      {/* Liste des images */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {images.map((image) => (
+          <div key={image.imageId} className="border rounded-lg p-4">
+            <img 
+              src={image.gitPath} 
+              alt={image.fileName}
+              className="w-full h-32 object-cover rounded mb-3"
+            />
+            <div className="space-y-2">
+              <p className="font-medium text-sm truncate">{image.fileName}</p>
+              <p className="text-xs text-gray-500">ID: {image.imageId}</p>
+              <p className="text-xs text-gray-500">
+                {image.uploadDate.toLocaleDateString()}
+              </p>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => handleImageDelete(image.imageId)}
+                  className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
+                >
+                  <Trash2 className="w-4 h-4 inline mr-1" />
+                  Supprimer
+                </button>
+                {image.githubUrl && (
+                  <a
+                    href={image.githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
+                  >
+                    <GitBranch className="w-4 h-4 inline mr-1" />
+                    Voir sur GitHub
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 ```
 
-#### **`GitSyncButton.tsx`**
-```tsx
-'use client';
+**⚠️ NOTE :** Ce composant n'est plus nécessaire avec la nouvelle architecture Vercel car la synchronisation se fait automatiquement lors de l'upload.
 
-import { useState } from 'react';
-import { GitBranch, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
+### **3. Nouvelles API Routes - Version Vercel**
 
-export default function GitSyncButton() {
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [syncStatus, setSyncStatus] = useState<'idle' | 'success' | 'error'>('idle');
-
-  const handleGitSync = async () => {
-    setIsSyncing(true);
-    try {
-      // Appel à l'API de synchronisation Git
-      const response = await fetch('/api/admin/git-sync', {
-        method: 'POST'
-      });
-      
-      if (response.ok) {
-        setSyncStatus('success');
-      } else {
-        setSyncStatus('error');
-      }
-    } catch (error) {
-      setSyncStatus('error');
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
-  return (
-    <button
-      onClick={handleGitSync}
-      disabled={isSyncing}
-      className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-    >
-      {isSyncing ? (
-        <RefreshCw className="w-5 h-5 animate-spin" />
-      ) : (
-        <GitBranch className="w-5 h-5" />
-      )}
-      <span className="ml-2">
-        {isSyncing ? 'Synchronisation...' : '🔄 Synchroniser Git'}
-      </span>
-    </button>
-  );
-}
-```
-
-### **3. Nouvelles API Routes**
-
-#### **`/api/admin/git-sync/route.ts`**
+#### **`/api/admin/upload-to-git/route.ts` - Upload Direct vers GitHub**
 ```typescript
 import { NextRequest, NextResponse } from 'next/server';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import path from 'path';
+import { Octokit } from '@octokit/rest';
 
-const execAsync = promisify(exec);
+const octokit = new Octokit({
+  auth: process.env.GITHUB_ACCESS_TOKEN,
+});
 
 export async function POST(request: NextRequest) {
   try {
-    const projectRoot = process.cwd();
+         const formData = await request.formData();
+     const file = formData.get('image') as File;
+     // Toutes les images vont dans uploads/
     
-    // Vérifier le statut Git
-    const { stdout: gitStatus } = await execAsync('git status --porcelain', { cwd: projectRoot });
-    
-    if (!gitStatus.trim()) {
-      return NextResponse.json({
-        success: true,
-        message: 'Aucun changement à synchroniser',
-        status: 'clean'
-      });
+    // 1. Valider le fichier
+    if (!validateImageFile(file)) {
+      return NextResponse.json({ error: 'Fichier invalide' }, { status: 400 });
     }
-
-    // Ajouter tous les fichiers modifiés
-    await execAsync('git add .', { cwd: projectRoot });
     
-    // Créer un commit
-    const commitMessage = `Synchronisation des images - ${new Date().toISOString()}`;
-    await execAsync(`git commit -m "${commitMessage}"`, { cwd: projectRoot });
+    // 2. Générer un ID unique pour l'image
+    const imageId = generateUniqueImageId();
+    const fileName = `${imageId}-${file.name}`;
     
-    // Pousser vers le repository distant
-    await execAsync('git push', { cwd: projectRoot });
+    // 3. Convertir le fichier en base64
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const base64Content = buffer.toString('base64');
     
+         // 4. Uploader directement vers GitHub via l'API
+     const response = await octokit.repos.createOrUpdateFileContents({
+       owner: process.env.GITHUB_OWNER!,
+       repo: process.env.GITHUB_REPO!,
+       path: `public/images/uploads/${fileName}`, // Toutes les images dans uploads/
+       message: `Ajout image: ${fileName} - ${new Date().toISOString()}`,
+       content: base64Content,
+       branch: process.env.GITHUB_BRANCH || 'main',
+     });
+    
+    // 5. Retourner les informations de l'image
     return NextResponse.json({
       success: true,
-      message: 'Synchronisation Git réussie',
-      status: 'synced',
-      changes: gitStatus.split('\n').filter(line => line.trim())
+      imageId,
+      fileName,
+             gitPath: `/images/uploads/${fileName}`, // Toutes les images dans uploads/
+      githubUrl: response.data.content?.html_url,
+      message: 'Image ajoutée directement au repository Git'
     });
-
+    
   } catch (error) {
-    console.error('Erreur synchronisation Git:', error);
+    console.error('Erreur upload vers Git:', error);
     return NextResponse.json(
-      { success: false, error: 'Erreur synchronisation Git' },
+      { error: 'Erreur upload vers Git' },
       { status: 500 }
     );
   }
 }
+
+function generateUniqueImageId(): string {
+  // Format: img-YYYYMMDD-HHMMSS-XXXXX
+  const now = new Date();
+  const timestamp = now.toISOString().replace(/[-:]/g, '').slice(0, 15);
+  const random = Math.random().toString(36).substring(2, 7);
+  return `img-${timestamp}-${random}`;
+}
+
+function validateImageFile(file: File): boolean {
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  const maxSize = 10 * 1024 * 1024; // 10MB
+  
+  return allowedTypes.includes(file.type) && file.size <= maxSize;
+}
 ```
 
-#### **`/api/admin/git-status/route.ts`**
+#### **`/api/admin/delete-from-git/route.ts` - Suppression depuis GitHub**
 ```typescript
 import { NextRequest, NextResponse } from 'next/server';
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import { Octokit } from '@octokit/rest';
 
-const execAsync = promisify(exec);
+const octokit = new Octokit({
+  auth: process.env.GITHUB_ACCESS_TOKEN,
+});
 
-export async function GET(request: NextRequest) {
+export async function DELETE(request: NextRequest) {
   try {
-    const projectRoot = process.cwd();
+    const { imageId, filePath } = await request.json();
     
-    // Vérifier le statut Git
-    const { stdout: gitStatus } = await execAsync('git status --porcelain', { cwd: projectRoot });
-    const { stdout: branchName } = await execAsync('git branch --show-current', { cwd: projectRoot });
+    // 1. Récupérer le SHA du fichier actuel
+    const { data: fileData } = await octokit.repos.getContent({
+      owner: process.env.GITHUB_OWNER!,
+      repo: process.env.GITHUB_REPO!,
+      path: filePath.replace('/images/', 'public/images/'),
+      branch: process.env.GITHUB_BRANCH || 'main',
+    });
     
-    const hasChanges = gitStatus.trim().length > 0;
-    const changeCount = gitStatus.split('\n').filter(line => line.trim()).length;
+    if (Array.isArray(fileData)) {
+      return NextResponse.json(
+        { error: 'Chemin invalide' },
+        { status: 400 }
+      );
+    }
+    
+    // 2. Supprimer le fichier du repository
+    await octokit.repos.deleteFile({
+      owner: process.env.GITHUB_OWNER!,
+      repo: process.env.GITHUB_REPO!,
+      path: filePath.replace('/images/', 'public/images/'),
+      message: `Suppression image: ${imageId} - ${new Date().toISOString()}`,
+      sha: fileData.sha,
+      branch: process.env.GITHUB_BRANCH || 'main',
+    });
     
     return NextResponse.json({
       success: true,
-      status: hasChanges ? 'dirty' : 'clean',
-      branch: branchName.trim(),
-      changeCount,
-      changes: hasChanges ? gitStatus.split('\n').filter(line => line.trim()) : []
+      message: 'Image supprimée du repository Git'
     });
-
+    
   } catch (error) {
-    console.error('Erreur récupération statut Git:', error);
+    console.error('Erreur suppression depuis Git:', error);
     return NextResponse.json(
-      { success: false, error: 'Erreur récupération statut Git' },
+      { error: 'Erreur suppression depuis Git' },
       { status: 500 }
     );
   }
@@ -292,7 +424,7 @@ export async function GET(request: NextRequest) {
 
 ### **4. Modification des Composants Existants**
 
-#### **`MongoImage.tsx` (Modifié)**
+#### **`MongoImage.tsx` (Modifié) - Version Vercel**
 ```tsx
 // ... imports existants ...
 
@@ -303,8 +435,8 @@ interface MongoImageProps {
   fallback?: React.ReactNode;
   onLoad?: () => void;
   onError?: () => void;
-  filePath?: string;        // Maintenant chemin local uniquement
-  gitPath?: string;         // Nouveau : chemin dans le repo Git
+  gitPath?: string;         // Chemin dans le repository Git (priorité 1)
+  filePath?: string;        // Chemin local (fallback, priorité 2)
 }
 
 export default function MongoImage({
@@ -314,16 +446,16 @@ export default function MongoImage({
   fallback,
   onLoad,
   onError,
-  filePath,
-  gitPath
+  gitPath,
+  filePath
 }: MongoImageProps) {
   // ... logique existante ...
   
-  // Priorité : 1. gitPath, 2. filePath, 3. imageId (API locale)
+  // Priorité : 1. gitPath (repository Git), 2. filePath (local), 3. imageId (API)
   let imageSrc = '';
   
   if (gitPath && gitPath.startsWith('/images/')) {
-    // Image depuis le repository Git
+    // Image depuis le repository Git (parfait pour Vercel)
     imageSrc = gitPath;
   } else if (filePath && filePath.startsWith('/public/images/')) {
     // Image locale (fallback)
@@ -343,128 +475,103 @@ export default function MongoImage({
 
 ### **Page Principale : `/admin/git-images`**
 
-#### **1. Gestionnaire d'Images Git**
+#### **1. Gestionnaire d'Images Git - Version Vercel**
 - **Composant** : `GitImageManager`
 - **Fonctionnalités** :
-  - ✅ Upload d'images vers `/public/images/uploads/`
-  - ✅ Suppression d'images locales
-  - ✅ Prévisualisation des images
-  - ✅ Gestion des métadonnées
+  - ✅ Upload direct des images vers le repository Git
+  - ✅ Génération automatique d'IDs uniques
+  - ✅ Suppression d'images depuis le repository Git
+  - ✅ Prévisualisation des images depuis Git
+  - ✅ Gestion des métadonnées et catégories
 
-#### **2. Statut Git en Temps Réel**
-- **Composant** : `GitStatusDisplay`
+#### **2. Gestion des Images par Catégorie**
+- **Composant** : `GitImageManager` (intégré)
 - **Fonctionnalités** :
-  - ✅ Affichage de la branche actuelle
-  - ✅ Nombre de fichiers modifiés
-  - ✅ Liste des changements en attente
-  - ✅ Indicateur visuel du statut
+     - ✅ Organisation des images dans le dossier uploads/
+  - ✅ Affichage des images avec leurs IDs uniques
+  - ✅ Liens directs vers GitHub pour chaque image
+  - ✅ Gestion des métadonnées (nom, date, taille)
 
-#### **3. Bouton de Synchronisation Git**
-- **Composant** : `GitSyncButton`
+#### **3. Synchronisation Automatique**
 - **Fonctionnalités** :
-  - ✅ Exécution automatique de `git add .`
-  - ✅ Création de commit avec message automatique
-  - ✅ Push vers le repository distant
-  - ✅ Feedback visuel du processus
+  - ✅ **Synchronisation immédiate** : Chaque upload crée automatiquement un commit Git
+  - ✅ **Pas de bouton manuel** : Plus besoin de cliquer sur "Synchroniser"
+  - ✅ **Commit automatique** : Message avec timestamp et ID de l'image
+  - ✅ **Push automatique** : L'image est immédiatement disponible dans le repository
 
 ### **Interface Utilisateur**
 
 ```tsx
-// Exemple d'interface complète
+// Exemple d'interface complète - Version Vercel
 <div className="max-w-7xl mx-auto p-6 space-y-6">
   <h1 className="text-3xl font-bold text-gray-800">
-    Gestionnaire d'Images Git
+    Gestionnaire d'Images Git - Version Vercel
   </h1>
   
-  {/* Statut Git */}
-  <GitStatusDisplay />
-  
-  {/* Gestionnaire d'images */}
+  {/* Gestionnaire d'images avec upload direct vers Git */}
   <GitImageManager />
   
-  {/* Bouton de synchronisation */}
-  <div className="flex justify-center">
-    <GitSyncButton />
-  </div>
-  
-  {/* Liste des images */}
+  {/* Liste des images existantes */}
   <GitImageList />
 </div>
 ```
 
 ---
 
-## 🔄 **Workflow Git Automatisé**
+## 🔄 **Workflow Git Automatisé - Version Vercel**
 
 ### **Processus de Synchronisation**
 
 #### **1. Upload d'Image**
 ```
-Interface Admin → Sélection fichier → Stockage local → Statut Git "dirty"
+Interface Admin → Sélection fichier → API GitHub → Repository Git → Commit automatique
 ```
 
-#### **2. Synchronisation Git**
+#### **2. Synchronisation Immédiate**
 ```
-Bouton "Synchroniser Git" → git add . → git commit → git push → Statut "clean"
+Upload → Commit automatique → Push automatique → Image disponible immédiatement
 ```
 
 #### **3. Déploiement Automatique**
 ```
-Repository distant → Webhook → Déploiement automatique → Images disponibles
+Repository distant → Webhook Vercel → Déploiement automatique → Images disponibles
 ```
 
-### **Commandes Git Automatisées**
+### **API GitHub Automatisée**
 
-#### **Script de Synchronisation**
-```bash
-#!/bin/bash
-# scripts/git-sync.sh
-
-set -e
-
-echo "🔄 Début de la synchronisation Git..."
-
-# Vérifier le statut
-if git diff-index --quiet HEAD --; then
-    echo "✅ Aucun changement à synchroniser"
-    exit 0
-fi
-
-# Ajouter tous les fichiers
-echo "📁 Ajout des fichiers..."
-git add .
-
-# Créer un commit
-COMMIT_MESSAGE="Synchronisation des images - $(date '+%Y-%m-%d %H:%M:%S')"
-echo "💾 Création du commit: $COMMIT_MESSAGE"
-git commit -m "$COMMIT_MESSAGE"
-
-# Pousser vers le repository distant
-echo "🚀 Push vers le repository distant..."
-git push
-
-echo "✅ Synchronisation Git terminée avec succès!"
-```
-
-#### **Intégration dans l'API**
+#### **Upload Direct vers GitHub**
 ```typescript
-// Dans /api/admin/git-sync/route.ts
-const syncScript = path.join(process.cwd(), 'scripts', 'git-sync.sh');
+// Chaque upload crée automatiquement un commit
+const response = await octokit.repos.createOrUpdateFileContents({
+  owner: process.env.GITHUB_OWNER!,
+  repo: process.env.GITHUB_REPO!,
+         path: `public/images/uploads/${fileName}`,
+  message: `Ajout image: ${fileName} - ${new Date().toISOString()}`,
+  content: base64Content,
+  branch: process.env.GITHUB_BRANCH || 'main',
+});
+```
 
-try {
-  // Exécuter le script de synchronisation
-  const { stdout, stderr } = await execAsync(`bash ${syncScript}`, {
-    cwd: projectRoot,
-    timeout: 30000 // 30 secondes max
-  });
-  
-  console.log('Sortie du script:', stdout);
-  if (stderr) console.warn('Avertissements:', stderr);
-  
-} catch (error) {
-  console.error('Erreur exécution script:', error);
-  throw new Error('Échec de la synchronisation Git');
-}
+#### **Suppression depuis GitHub**
+```typescript
+// Chaque suppression crée automatiquement un commit
+await octokit.repos.deleteFile({
+  owner: process.env.GITHUB_OWNER!,
+  repo: process.env.GITHUB_REPO!,
+  path: filePath.replace('/images/', 'public/images/'),
+  message: `Suppression image: ${imageId} - ${new Date().toISOString()}`,
+  sha: fileData.sha,
+  branch: process.env.GITHUB_BRANCH || 'main',
+});
+```
+
+#### **Avantages de l'API GitHub**
+```typescript
+// ✅ Pas de scripts shell nécessaires
+// ✅ Pas de stockage local temporaire
+// ✅ Synchronisation immédiate
+// ✅ Gestion automatique des commits
+// ✅ Parfait pour Vercel et autres plateformes serverless
 ```
 
 ---
@@ -604,54 +711,30 @@ describe('MongoImage avec Git', () => {
 
 ## 🚀 **Déploiement et Maintenance**
 
-### **Script de Migration**
-
-#### **Migration depuis Cloudinary**
-```bash
-#!/bin/bash
-# scripts/migrate-cloudinary-to-git.sh
-
-echo "🚀 Migration Cloudinary → Git..."
-
-# 1. Télécharger toutes les images Cloudinary
-echo "📥 Téléchargement des images Cloudinary..."
-node scripts/download-cloudinary-images.js
-
-# 2. Organiser les images dans la nouvelle structure
-echo "📁 Organisation des images..."
-node scripts/organize-images.js
-
-# 3. Mettre à jour les références dans le code
-echo "🔧 Mise à jour des références..."
-node scripts/update-image-references.js
-
-# 4. Premier commit Git
-echo "💾 Premier commit Git..."
-git add .
-git commit -m "Migration Cloudinary → Git - Images initiales"
-git push
-
-echo "✅ Migration terminée avec succès!"
-```
-
 ### **Configuration de Production**
+
+### **Configuration de Production - Version Vercel**
 
 #### **Variables d'Environnement**
 ```env
-# Git Configuration
-GIT_REPOSITORY_URL=https://github.com/user/repo.git
-GIT_BRANCH=main
-GIT_USER_NAME=Deployment Bot
-GIT_USER_EMAIL=deploy@example.com
+# GitHub Configuration
+GITHUB_ACCESS_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
+GITHUB_OWNER=votre-username
+GITHUB_REPO=votre-repo-name
+GITHUB_BRANCH=main
 
 # Sécurité
-GIT_ACCESS_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
-ADMIN_GIT_SYNC_ENABLED=true
+ADMIN_GIT_UPLOAD_ENABLED=true
 MAX_IMAGE_SIZE=10485760
 ALLOWED_IMAGE_TYPES=jpg,jpeg,png,gif,webp
 ```
 
-#### **Webhook de Déploiement**
+#### **Dépendances NPM Requises**
+```bash
+npm install @octokit/rest
+```
+
+#### **Webhook de Déploiement Vercel**
 ```typescript
 // pages/api/webhooks/github.ts
 export default function handler(req: NextRequest, res: NextResponse) {
@@ -663,8 +746,8 @@ export default function handler(req: NextRequest, res: NextResponse) {
   
   // Vérifier que c'est un push sur la branche main
   if (ref === 'refs/heads/main') {
-    // Déclencher le déploiement
-    await triggerDeployment(commits);
+    // Vercel se redéploie automatiquement
+    console.log('🔄 Déploiement Vercel déclenché par push GitHub');
   }
   
   res.status(200).json({ message: 'Webhook processed' });
@@ -737,36 +820,39 @@ export async function autoResolveConflict(conflictData: ConflictData) {
 
 ## 🎯 **Conclusion et Prochaines Étapes**
 
-### **Résumé de la Migration**
+### **Résumé de la Migration - Version Vercel**
 
 Cette migration transforme votre système d'images de :
 - **Cloudinary** (service tiers) → **Git** (contrôle total)
-- **Synchronisation API** → **Synchronisation Git**
-- **Stockage cloud** → **Stockage local + versioning**
+- **Synchronisation API** → **Upload direct vers GitHub**
+- **Stockage cloud** → **Repository Git + versioning automatique**
+- **Stockage local persistant** → **Pas de stockage local (parfait pour Vercel)**
 
-### **Avantages Obtenus**
+### **Avantages Obtenus - Version Vercel**
 - ✅ **Contrôle total** sur vos images
 - ✅ **Versioning complet** de l'historique des modifications
 - ✅ **Pas de coûts** de service tiers
 - ✅ **Sécurité renforcée** (images dans votre infrastructure)
 - ✅ **Workflow Git** familier pour les développeurs
+- ✅ **Parfait pour Vercel** (pas de stockage local persistant)
+- ✅ **Synchronisation immédiate** (pas de bouton manuel)
+- ✅ **Déploiement automatique** via webhook GitHub
 
-### **Points de Vigilance**
+### **Points de Vigilance - Version Vercel**
 - ⚠️ **Taille du repository** (gestion avec Git LFS si nécessaire)
 - ⚠️ **Gestion des conflits** (stratégies de résolution automatique)
-- ⚠️ **Performance** (pas de CDN, images servies localement)
-- ⚠️ **Backup** (responsabilité de sauvegarder le repository)
+- ⚠️ **Performance** (pas de CDN, images servies depuis le repository)
+- ⚠️ **Dépendance GitHub** (nécessite un token d'accès valide)
+- ⚠️ **Limites API GitHub** (respecter les quotas de l'API)
 
 ### **Prochaines Étapes Recommandées**
 
 1. **Phase 1** : Développement des nouveaux composants
 2. **Phase 2** : Tests en environnement de développement
-3. **Phase 3** : Migration des données existantes
-4. **Phase 4** : Déploiement en production
-5. **Phase 5** : Nettoyage de l'ancien système Cloudinary
+3. **Phase 3** : Déploiement en production
 
 ---
 
-**🚀 Votre système d'images sera maintenant entièrement contrôlé par Git, offrant transparence, contrôle et flexibilité !**
+**🚀 Votre système d'images sera maintenant entièrement contrôlé par Git via l'API GitHub, parfait pour Vercel !**
 
 **💡 Conseil : Commencez par tester la migration sur une branche de développement avant de déployer en production !**

@@ -8,8 +8,8 @@ interface UploadedImage {
   id: string;
   filename: string;
   originalName: string;
-  filePath: string;        // Maintenant URL Cloudinary
-  cloudinaryId: string;    // Nouveau champ
+  filePath: string;        // Chemin local ou Git
+  gitPath?: string;        // Nouveau champ pour Git
   size: number;
   uploadedAt: string;
 }
@@ -54,11 +54,11 @@ export default function ImageUpload() {
         // Mise à jour avec les nouveaux champs
         const newImage = {
           ...result.image,
-          cloudinaryId: result.image.cloudinaryId || result.image.filename
+          gitPath: result.image.gitPath
         };
         
         setUploadedImages(prev => [newImage, ...prev]);
-        setUploadStatus({ type: 'success', message: 'Image uploadée vers Cloudinary ! Elle sera synchronisée localement prochainement.' });
+        setUploadStatus({ type: 'success', message: 'Image uploadée avec succès ! Utilisez le gestionnaire Git pour l\'upload direct vers Git.' });
         
         // Réinitialiser l'input file
         if (fileInputRef.current) {

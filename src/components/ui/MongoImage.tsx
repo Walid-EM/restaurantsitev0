@@ -10,8 +10,9 @@ interface MongoImageProps {
   fallback?: React.ReactNode;
   onLoad?: () => void;
   onError?: () => void;
-  filePath?: string;        // Maintenant URL Cloudinary
-  cloudinaryId?: string;    // Nouveau champ optionnel
+  gitPath?: string;         // Chemin dans le repository Git (priorité 1)
+  filePath?: string;        // Chemin local (fallback, priorité 2)
+
 }
 
 export default function MongoImage({
@@ -21,8 +22,8 @@ export default function MongoImage({
   fallback,
   onLoad,
   onError,
-  filePath,
-  cloudinaryId
+  gitPath,
+  filePath
 }: MongoImageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -42,11 +43,14 @@ export default function MongoImage({
     onError?.();
   };
 
-  // Priorité : 1. Image locale synchronisée, 2. API locale
+  // Priorité : 1. gitPath (repository Git), 2. filePath (local), 3. imageId (API)
   let imageSrc = '';
   
-  if (filePath && filePath.startsWith('/public/images/')) {
-    // Image locale synchronisée depuis Cloudinary
+  if (gitPath && gitPath.startsWith('/images/')) {
+    // Image depuis le repository Git (parfait pour Vercel)
+    imageSrc = gitPath;
+  } else if (filePath && filePath.startsWith('/public/images/')) {
+    // Image locale (fallback)
     imageSrc = filePath.replace('/public/images/', '/images/');
   } else if (imageId && imageId !== 'undefined') {
     // Fallback vers l'API locale
