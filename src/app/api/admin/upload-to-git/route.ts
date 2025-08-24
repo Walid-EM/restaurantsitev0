@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Octokit } from '@octokit/rest';
-import sharp from 'sharp';
 
 const octokit = new Octokit({
   auth: process.env.GITHUB_ACCESS_TOKEN,
@@ -19,15 +18,25 @@ async function resizeImageIfNeeded(buffer: Buffer, maxSizeBytes: number = 4.5 * 
     console.log(`🔍 Vérification de la taille: ${(buffer.length / 1024 / 1024).toFixed(2)} MB`);
     console.log(`🎯 Limite cible: ${(maxSizeBytes / 1024 / 1024).toFixed(2)} MB`);
     
+    // Import dynamique de Sharp (comme dans l'API de test qui fonctionne)
+    let sharp;
+    try {
+      sharp = await import('sharp');
+      console.log('✅ Import Sharp réussi');
+    } catch (importError) {
+      console.error('❌ Erreur import Sharp:', importError);
+      return buffer;
+    }
+    
     // Vérifier que Sharp est disponible
-    if (typeof sharp === 'undefined') {
-      console.error('❌ Sharp n\'est pas disponible');
+    if (typeof sharp.default === 'undefined') {
+      console.error('❌ Sharp.default non disponible');
       console.error('❌ Type de sharp:', typeof sharp);
       return buffer;
     }
     
     console.log('✅ Sharp est disponible');
-    console.log('✅ Version Sharp:', sharp.versions?.sharp || 'Version inconnue');
+    console.log('✅ Version Sharp:', sharp.default.versions?.sharp || 'Version inconnue');
     
     // Vérifier la taille actuelle
     if (buffer.length <= maxSizeBytes) {
@@ -41,7 +50,7 @@ async function resizeImageIfNeeded(buffer: Buffer, maxSizeBytes: number = 4.5 * 
     console.log('📊 Analyse des métadonnées...');
     let image;
     try {
-      image = sharp(buffer);
+      image = sharp.default(buffer);
       console.log('✅ Image Sharp créée avec succès');
     } catch (sharpError) {
       console.error('❌ Erreur création image Sharp:', sharpError);
@@ -124,7 +133,7 @@ async function resizeImageIfNeeded(buffer: Buffer, maxSizeBytes: number = 4.5 * 
       console.log('🔄 Deuxième redimensionnement (qualité 70%)...');
       try {
         // Réduire encore plus la qualité
-        resizedBuffer = await sharp(resizedBuffer)
+        resizedBuffer = await sharp.default(resizedBuffer)
           .jpeg({ quality: 70 })
           .png({ quality: 70 })
           .webp({ quality: 70 })
@@ -162,11 +171,7 @@ export async function POST(request: NextRequest) {
     
     // TEST DIAGNOSTIC : Vérifier Sharp immédiatement
     console.log('🔍 DIAGNOSTIC SHARP:');
-    console.log('🔍 Type de sharp:', typeof sharp);
-    console.log('🔍 Sharp disponible:', typeof sharp !== 'undefined');
-    if (typeof sharp !== 'undefined') {
-      console.log('🔍 Version Sharp:', sharp.versions?.sharp || 'Version inconnue');
-    }
+    console.log('🔍 Sharp sera importé dynamiquement dans resizeImageIfNeeded');
     
     // Vérifier les variables d'environnement
     if (!process.env.GITHUB_ACCESS_TOKEN || !process.env.GITHUB_OWNER || !process.env.GITHUB_REPO) {
@@ -195,21 +200,7 @@ export async function POST(request: NextRequest) {
     console.log(`📊 Taille originale: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
     console.log(`🎨 Type MIME: ${file.type}`);
 
-    // TEST DIAGNOSTIC : Test de redimensionnement simple
-    console.log('🧪 TEST DIAGNOSTIC REDIMENSIONNEMENT:');
-    try {
-      const testBuffer = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
-      console.log('🧪 Taille test buffer:', testBuffer.length, 'bytes');
-      
-      if (typeof sharp !== 'undefined') {
-        const testResized = await sharp(testBuffer).resize(50, 50).png().toBuffer();
-        console.log('✅ Test redimensionnement réussi:', testResized.length, 'bytes');
-      } else {
-        console.log('❌ Sharp non disponible pour le test');
-      }
-    } catch (testError) {
-      console.error('❌ Erreur test redimensionnement:', testError);
-    }
+    // TEST DIAGNOSTIC : Test de redimensionnement supprimé (Sharp sera testé dans resizeImageIfNeeded)
 
     // Convertir le fichier en buffer
     console.log('🔄 Conversion du fichier en buffer...');
