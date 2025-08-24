@@ -1,20 +1,33 @@
 'use client';
 
-import { useState } from 'react';
-import { TestTube, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
 
 interface SharpTestResult {
   success: boolean;
-  sharpAvailable?: boolean;
-  sharpVersion?: Record<string, string>;
-  testResize?: {
-    success: boolean;
-    originalSize?: number;
-    resizedSize?: number;
-    error?: string;
+  sharpAvailable: boolean;
+  sharpVersion: Record<string, string>;
+  testResults: {
+    original: {
+      size: number;
+      sizeKB: string;
+    };
+    resizedDown: {
+      size: number;
+      sizeKB: string;
+      reduction: string;
+    };
+    resizedUp: {
+      size: number;
+      sizeKB: string;
+      increase: string;
+    };
+    compressed: {
+      size: number;
+      sizeKB: string;
+      reduction: string;
+    };
   };
-  error?: string;
-  details?: string;
+  message: string;
 }
 
 export default function SharpTest() {
@@ -23,17 +36,23 @@ export default function SharpTest() {
 
   const testSharp = async () => {
     setIsTesting(true);
-    setTestResult(null);
-    
     try {
       const response = await fetch('/api/test-sharp');
       const result: SharpTestResult = await response.json();
       setTestResult(result);
     } catch (error) {
+      console.error('Erreur lors du test Sharp:', error);
       setTestResult({
         success: false,
-        error: 'Erreur de connexion',
-        details: error instanceof Error ? error.message : 'Erreur inconnue'
+        sharpAvailable: false,
+        sharpVersion: {},
+        testResults: {
+          original: { size: 0, sizeKB: '0' },
+          resizedDown: { size: 0, sizeKB: '0', reduction: '0' },
+          resizedUp: { size: 0, sizeKB: '0', increase: '0' },
+          compressed: { size: 0, sizeKB: '0', reduction: '0' }
+        },
+        message: 'Erreur lors du test'
       });
     } finally {
       setIsTesting(false);
@@ -41,86 +60,82 @@ export default function SharpTest() {
   };
 
   return (
-    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-      <div className="flex items-start space-x-3">
-        <TestTube className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-        
-        <div className="flex-1">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium text-yellow-900">
-              🧪 Test de Sharp (Redimensionnement)
-            </h3>
-            <button
-              onClick={testSharp}
-              disabled={isTesting}
-              className="px-3 py-1 bg-yellow-600 text-white rounded text-sm hover:bg-yellow-700 disabled:opacity-50"
-            >
-              {isTesting ? (
-                <Loader2 className="w-4 h-4 animate-spin inline mr-2" />
-              ) : (
-                <TestTube className="w-4 h-4 inline mr-2" />
-              )}
-              {isTesting ? 'Test en cours...' : 'Tester Sharp'}
-            </button>
+    <div className="bg-white p-6 rounded-lg shadow-md">
+      <h3 className="text-lg font-semibold mb-4">🧪 Test Sharp (Redimensionnement d&apos;images)</h3>
+      
+      <button
+        onClick={testSharp}
+        disabled={isTesting}
+        className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white px-4 py-2 rounded mb-4"
+      >
+        {isTesting ? 'Test en cours...' : 'Tester Sharp'}
+      </button>
+
+      {testResult && (
+        <div className="space-y-4">
+          <div className="border-t pt-4">
+            <h4 className="font-medium text-gray-800 mb-2">📦 Disponibilité Sharp</h4>
+            <p className={`text-sm ${testResult.sharpAvailable ? 'text-green-600' : 'text-red-600'}`}>
+              {testResult.sharpAvailable ? '✅ Oui' : '❌ Non'}
+            </p>
           </div>
-          
-          <p className="text-sm text-yellow-700 mt-1">
-            Vérifier que la bibliothèque Sharp fonctionne pour le redimensionnement automatique
-          </p>
-          
-          {testResult && (
-            <div className="mt-3 p-3 bg-white rounded border">
-              <div className="flex items-center space-x-2 mb-2">
-                {testResult.success ? (
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                ) : (
-                  <XCircle className="w-4 h-4 text-red-600" />
-                )}
-                <span className="font-medium">
-                  {testResult.success ? 'Test réussi' : 'Test échoué'}
-                </span>
+
+          {testResult.sharpAvailable && (
+            <>
+              <div className="border-t pt-4">
+                <h4 className="font-medium text-gray-800 mb-2">🔧 Version Sharp</h4>
+                <p className="text-sm text-gray-600">
+                  Sharp: {testResult.sharpVersion.sharp || 'N/A'}
+                </p>
               </div>
-              
-              <div className="text-xs space-y-1">
-                <div><strong>Sharp disponible:</strong> {testResult.sharpAvailable ? '✅ Oui' : '❌ Non'}</div>
+
+              <div className="border-t pt-4">
+                <h4 className="font-medium text-gray-800 mb-2">📊 Résultats des Tests</h4>
                 
-                {testResult.sharpVersion && (
-                  <div><strong>Version Sharp:</strong> {JSON.stringify(testResult.sharpVersion)}</div>
-                )}
-                
-                {testResult.testResize && (
-                  <div>
-                    <strong>Test redimensionnement:</strong> {testResult.testResize.success ? '✅ Réussi' : '❌ Échoué'}
-                    {testResult.testResize.success && testResult.testResize.originalSize && testResult.testResize.resizedSize && (
-                      <div className="ml-4 text-gray-600">
-                        <div>Taille originale: {testResult.testResize.originalSize} bytes</div>
-                        <div>Taille redimensionnée: {testResult.testResize.resizedSize} bytes</div>
-                      </div>
-                    )}
-                    {testResult.testResize.error && (
-                      <div className="ml-4 text-red-600">
-                        Erreur: {testResult.testResize.error}
-                      </div>
-                    )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="bg-gray-50 p-3 rounded">
+                    <h5 className="font-medium text-gray-700">🖼️ Image Originale</h5>
+                    <p className="text-gray-600">Taille: {testResult.testResults.original.sizeKB} KB</p>
                   </div>
-                )}
-                
-                {testResult.error && (
-                  <div className="text-red-600">
-                    <strong>Erreur:</strong> {testResult.error}
+
+                  <div className="bg-gray-50 p-3 rounded">
+                    <h5 className="font-medium text-gray-700">📉 Redimensionnement ↓ (50x50)</h5>
+                    <p className="text-gray-600">Taille: {testResult.testResults.resizedDown.sizeKB} KB</p>
+                    <p className="text-green-600">Réduction: {testResult.testResults.resizedDown.reduction}%</p>
                   </div>
-                )}
-                
-                {testResult.details && (
-                  <div className="text-red-600">
-                    <strong>Détails:</strong> {testResult.details}
+
+                  <div className="bg-gray-50 p-3 rounded">
+                    <h5 className="font-medium text-gray-700">📈 Redimensionnement ↑ (200x200)</h5>
+                    <p className="text-gray-600">Taille: {testResult.testResults.resizedUp.sizeKB} KB</p>
+                    <p className="text-orange-600">Augmentation: {testResult.testResults.resizedUp.increase}%</p>
                   </div>
-                )}
+
+                  <div className="bg-gray-50 p-3 rounded">
+                    <h5 className="font-medium text-gray-700">🗜️ Compression (Qualité 50%)</h5>
+                    <p className="text-gray-600">Taille: {testResult.testResults.compressed.sizeKB} KB</p>
+                    <p className="text-green-600">Réduction: {testResult.testResults.compressed.reduction}%</p>
+                  </div>
+                </div>
+
+                <div className="mt-4 p-3 bg-blue-50 rounded">
+                  <p className="text-sm text-blue-800">
+                    <strong>💡 Explication :</strong> Le redimensionnement vers le bas (50x50) et la compression 
+                    réduisent la taille, tandis que le redimensionnement vers le haut (200x200) l&apos;augmente. 
+                    C&apos;est exactement le comportement attendu pour l&apos;optimisation automatique !
+                  </p>
+                </div>
               </div>
+            </>
+          )}
+
+          {!testResult.success && (
+            <div className="border-t pt-4">
+              <h4 className="font-medium text-red-800 mb-2">❌ Erreur</h4>
+              <p className="text-sm text-red-600">{testResult.message}</p>
             </div>
           )}
         </div>
-      </div>
+      )}
     </div>
   );
 }
