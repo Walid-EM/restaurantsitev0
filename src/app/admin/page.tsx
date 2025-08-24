@@ -10,6 +10,7 @@ import ApiTest from '../components/ApiTest';
 import AdminImageDisplay from '@/components/ui/AdminImageDisplay';
 import ImageOptimizationInfo from '@/components/ui/ImageOptimizationInfo';
 import SharpTest from '@/components/ui/SharpTest';
+import ImageUploadStats from '@/components/ui/ImageUploadStats';
 
 import LocalImagesDisplay from '@/components/ui/LocalImagesDisplay';
 import { 
@@ -105,6 +106,15 @@ interface PendingImage {
   preview: string;
 }
 
+interface UploadStats {
+  fileName: string;
+  originalSize: number;
+  optimizedSize: number;
+  sizeReduction: string;
+  status: 'success' | 'error' | 'processing';
+  error?: string;
+}
+
 export default function AdminDashboard() {
   const { data: session, status } = useSession();
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -158,6 +168,7 @@ export default function AdminDashboard() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number }>({ current: 0, total: 0 });
+  const [uploadStats, setUploadStats] = useState<UploadStats[]>([]);
   const [isLoadingImages, setIsLoadingImages] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -242,6 +253,16 @@ export default function AdminDashboard() {
     setUploadStatus('idle');
     setUploadProgress({ current: 0, total: pendingImages.length });
     
+    // Initialiser les statistiques d'upload
+    const initialStats: UploadStats[] = pendingImages.map(pendingImage => ({
+      fileName: pendingImage.file.name,
+      originalSize: pendingImage.file.size,
+      optimizedSize: pendingImage.file.size,
+      sizeReduction: '0%',
+      status: 'processing'
+    }));
+    setUploadStats(initialStats);
+    
     try {
       const uploadedImages: GitImage[] = [];
       let successCount = 0;
@@ -278,14 +299,48 @@ export default function AdminDashboard() {
               uploadedImages.push(uploadedImage);
               successCount++;
               console.log(`✅ Succès: ${pendingImage.file.name}`);
+              
+              // Mettre à jour les statistiques avec les données de redimensionnement
+              setUploadStats(prev => prev.map(stat => 
+                stat.fileName === pendingImage.file.name 
+                  ? {
+                      ...stat,
+                      status: 'success' as const,
+                      optimizedSize: result.optimizedSize || pendingImage.file.size,
+                      sizeReduction: result.sizeReduction || '0%'
+                    }
+                  : stat
+              ));
             } else {
               errorCount++;
               console.error(`❌ Erreur: ${pendingImage.file.name}`, result.error);
+              
+              // Mettre à jour les statistiques avec l'erreur
+              setUploadStats(prev => prev.map(stat => 
+                stat.fileName === pendingImage.file.name 
+                  ? {
+                      ...stat,
+                      status: 'error' as const,
+                      error: result.error || 'Erreur inconnue'
+                    }
+                  : stat
+              ));
             }
           } else {
             errorCount++;
             const errorData = await response.json().catch(() => ({}));
             console.error(`❌ Erreur HTTP: ${pendingImage.file.name}`, errorData);
+            
+            // Mettre à jour les statistiques avec l'erreur HTTP
+            setUploadStats(prev => prev.map(stat => 
+              stat.fileName === pendingImage.file.name 
+                ? {
+                    ...stat,
+                    status: 'error' as const,
+                    error: `Erreur HTTP ${response.status}: ${errorData.error || 'Erreur inconnue'}`
+                  }
+                : stat
+            ));
           }
           
           // Mettre à jour le progrès
@@ -294,6 +349,17 @@ export default function AdminDashboard() {
         } catch (error) {
           errorCount++;
           console.error(`❌ Erreur upload ${pendingImage.file.name}:`, error);
+          
+          // Mettre à jour les statistiques avec l'erreur
+          setUploadStats(prev => prev.map(stat => 
+            stat.fileName === pendingImage.file.name 
+              ? {
+                  ...stat,
+                  status: 'error' as const,
+                  error: error instanceof Error ? error.message : 'Erreur inconnue'
+                }
+              : stat
+          ));
         }
       }
       
@@ -2134,6 +2200,13 @@ export default function AdminDashboard() {
                 <p className="text-base lg:text-lg text-gray-600 mt-3 lg:mt-4 font-medium">
                   {uploadProgress.current} / {uploadProgress.total} images uploadées
                 </p>
+              </div>
+            )}
+            
+            {/* Statistiques de redimensionnement */}
+            {uploadStats.length > 0 && (
+              <div className="mt-6 lg:mt-8">
+                <ImageUploadStats uploads={uploadStats} />
               </div>
             )}
             
