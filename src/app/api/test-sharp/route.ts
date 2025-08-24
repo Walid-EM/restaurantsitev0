@@ -1,32 +1,21 @@
 import { NextResponse } from 'next/server';
+import sharp from 'sharp';
 
 export async function GET() {
   try {
     console.log('🧪 Test de Sharp...');
     
     // Vérifier que Sharp est disponible
-    if (typeof require === 'undefined') {
-      console.log('❌ require n\'est pas disponible (ES modules)');
+    if (typeof sharp === 'undefined') {
+      console.log('❌ Sharp n\'est pas disponible');
       return NextResponse.json({ 
         success: false, 
-        error: 'require n\'est pas disponible',
+        error: 'Sharp n\'est pas disponible',
         sharpAvailable: false 
       });
     }
     
-    let sharp;
-    try {
-      sharp = require('sharp');
-      console.log('✅ Sharp importé avec succès');
-    } catch (error) {
-      console.error('❌ Erreur import Sharp:', error);
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Erreur import Sharp',
-        sharpAvailable: false,
-        details: error instanceof Error ? error.message : 'Erreur inconnue'
-      });
-    }
+    console.log('✅ Sharp importé avec succès');
     
     // Vérifier la version de Sharp
     const sharpVersion = sharp.versions;

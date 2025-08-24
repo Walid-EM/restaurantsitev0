@@ -3,8 +3,22 @@
 import { useState } from 'react';
 import { TestTube, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 
+interface SharpTestResult {
+  success: boolean;
+  sharpAvailable?: boolean;
+  sharpVersion?: Record<string, string>;
+  testResize?: {
+    success: boolean;
+    originalSize?: number;
+    resizedSize?: number;
+    error?: string;
+  };
+  error?: string;
+  details?: string;
+}
+
 export default function SharpTest() {
-  const [testResult, setTestResult] = useState<any>(null);
+  const [testResult, setTestResult] = useState<SharpTestResult | null>(null);
   const [isTesting, setIsTesting] = useState(false);
 
   const testSharp = async () => {
@@ -13,7 +27,7 @@ export default function SharpTest() {
     
     try {
       const response = await fetch('/api/test-sharp');
-      const result = await response.json();
+      const result: SharpTestResult = await response.json();
       setTestResult(result);
     } catch (error) {
       setTestResult({
@@ -77,10 +91,15 @@ export default function SharpTest() {
                 {testResult.testResize && (
                   <div>
                     <strong>Test redimensionnement:</strong> {testResult.testResize.success ? '✅ Réussi' : '❌ Échoué'}
-                    {testResult.testResize.success && (
+                    {testResult.testResize.success && testResult.testResize.originalSize && testResult.testResize.resizedSize && (
                       <div className="ml-4 text-gray-600">
                         <div>Taille originale: {testResult.testResize.originalSize} bytes</div>
                         <div>Taille redimensionnée: {testResult.testResize.resizedSize} bytes</div>
+                      </div>
+                    )}
+                    {testResult.testResize.error && (
+                      <div className="ml-4 text-red-600">
+                        Erreur: {testResult.testResize.error}
                       </div>
                     )}
                   </div>
