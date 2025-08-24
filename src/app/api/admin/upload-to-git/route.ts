@@ -22,8 +22,12 @@ async function resizeImageIfNeeded(buffer: Buffer, maxSizeBytes: number = 4.5 * 
     // Vérifier que Sharp est disponible
     if (typeof sharp === 'undefined') {
       console.error('❌ Sharp n\'est pas disponible');
+      console.error('❌ Type de sharp:', typeof sharp);
       return buffer;
     }
+    
+    console.log('✅ Sharp est disponible');
+    console.log('✅ Version Sharp:', sharp.versions?.sharp || 'Version inconnue');
     
     // Vérifier la taille actuelle
     if (buffer.length <= maxSizeBytes) {
@@ -35,11 +39,27 @@ async function resizeImageIfNeeded(buffer: Buffer, maxSizeBytes: number = 4.5 * 
 
     // Analyser l'image
     console.log('📊 Analyse des métadonnées...');
-    const image = sharp(buffer);
-    const metadata = await image.metadata();
+    let image;
+    try {
+      image = sharp(buffer);
+      console.log('✅ Image Sharp créée avec succès');
+    } catch (sharpError) {
+      console.error('❌ Erreur création image Sharp:', sharpError);
+      return buffer;
+    }
+    
+    let metadata;
+    try {
+      metadata = await image.metadata();
+      console.log('✅ Métadonnées récupérées avec succès');
+    } catch (metadataError) {
+      console.error('❌ Erreur récupération métadonnées:', metadataError);
+      return buffer;
+    }
     
     if (!metadata.width || !metadata.height) {
       console.log('⚠️ Impossible de lire les métadonnées, retour de l\'image originale');
+      console.log('📊 Métadonnées reçues:', metadata);
       return buffer;
     }
 
@@ -64,24 +84,34 @@ async function resizeImageIfNeeded(buffer: Buffer, maxSizeBytes: number = 4.5 * 
 
     // Redimensionner l'image avec une qualité optimisée
     console.log('🔄 Premier redimensionnement (qualité 85%)...');
-    let resizedBuffer = await image
-      .resize(newWidth, newHeight, {
-        fit: 'inside',
-        withoutEnlargement: true
-      })
-      .jpeg({ 
-        quality: 85, // Qualité JPEG optimale
-        progressive: true 
-      })
-      .png({ 
-        quality: 85, // Qualité PNG optimale
-        progressive: true 
-      })
-      .webp({ 
-        quality: 85, // Qualité WebP optimale
-        effort: 4 // Niveau de compression
-      })
-      .toBuffer();
+    let resizedBuffer;
+    
+    try {
+      resizedBuffer = await image
+        .resize(newWidth, newHeight, {
+          fit: 'inside',
+          withoutEnlargement: true
+        })
+        .jpeg({ 
+          quality: 85, // Qualité JPEG optimale
+          progressive: true 
+        })
+        .png({ 
+          quality: 85, // Qualité PNG optimale
+          progressive: true 
+        })
+        .webp({ 
+          quality: 85, // Qualité WebP optimale
+          effort: 4 // Niveau de compression
+        })
+        .toBuffer();
+      
+      console.log('✅ Premier redimensionnement réussi');
+    } catch (resizeError) {
+      console.error('❌ Erreur premier redimensionnement:', resizeError);
+      console.error('❌ Stack trace:', resizeError instanceof Error ? resizeError.stack : 'Pas de stack trace');
+      return buffer;
+    }
 
     const firstPassSizeMB = resizedBuffer.length / 1024 / 1024;
     console.log(`📊 Taille après premier passage: ${firstPassSizeMB.toFixed(2)} MB`);
@@ -92,12 +122,20 @@ async function resizeImageIfNeeded(buffer: Buffer, maxSizeBytes: number = 4.5 * 
       console.log(`⚠️ Premier redimensionnement insuffisant: ${firstPassSizeMB.toFixed(2)} MB > ${(maxSizeBytes / 1024 / 1024).toFixed(2)} MB`);
       
       console.log('🔄 Deuxième redimensionnement (qualité 70%)...');
-      // Réduire encore plus la qualité
-      resizedBuffer = await sharp(resizedBuffer)
-        .jpeg({ quality: 70 })
-        .png({ quality: 70 })
-        .webp({ quality: 70 })
-        .toBuffer();
+      try {
+        // Réduire encore plus la qualité
+        resizedBuffer = await sharp(resizedBuffer)
+          .jpeg({ quality: 70 })
+          .png({ quality: 70 })
+          .webp({ quality: 70 })
+          .toBuffer();
+        
+        console.log('✅ Deuxième redimensionnement réussi');
+      } catch (secondPassError) {
+        console.error('❌ Erreur deuxième redimensionnement:', secondPassError);
+        console.error('❌ Stack trace:', secondPassError instanceof Error ? secondPassError.stack : 'Pas de stack trace');
+        // Continuer avec le premier résultat
+      }
       
       const secondPassSizeMB = resizedBuffer.length / 1024 / 1024;
       console.log(`📊 Taille après deuxième passage: ${secondPassSizeMB.toFixed(2)} MB`);
@@ -121,6 +159,14 @@ async function resizeImageIfNeeded(buffer: Buffer, maxSizeBytes: number = 4.5 * 
 export async function POST(request: NextRequest) {
   try {
     console.log('🚀 API upload-to-git appelée');
+    
+    // TEST DIAGNOSTIC : Vérifier Sharp immédiatement
+    console.log('🔍 DIAGNOSTIC SHARP:');
+    console.log('🔍 Type de sharp:', typeof sharp);
+    console.log('🔍 Sharp disponible:', typeof sharp !== 'undefined');
+    if (typeof sharp !== 'undefined') {
+      console.log('🔍 Version Sharp:', sharp.versions?.sharp || 'Version inconnue');
+    }
     
     // Vérifier les variables d'environnement
     if (!process.env.GITHUB_ACCESS_TOKEN || !process.env.GITHUB_OWNER || !process.env.GITHUB_REPO) {
@@ -148,6 +194,22 @@ export async function POST(request: NextRequest) {
     console.log(`📁 Fichier reçu: ${file.name}`);
     console.log(`📊 Taille originale: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
     console.log(`🎨 Type MIME: ${file.type}`);
+
+    // TEST DIAGNOSTIC : Test de redimensionnement simple
+    console.log('🧪 TEST DIAGNOSTIC REDIMENSIONNEMENT:');
+    try {
+      const testBuffer = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+      console.log('🧪 Taille test buffer:', testBuffer.length, 'bytes');
+      
+      if (typeof sharp !== 'undefined') {
+        const testResized = await sharp(testBuffer).resize(50, 50).png().toBuffer();
+        console.log('✅ Test redimensionnement réussi:', testResized.length, 'bytes');
+      } else {
+        console.log('❌ Sharp non disponible pour le test');
+      }
+    } catch (testError) {
+      console.error('❌ Erreur test redimensionnement:', testError);
+    }
 
     // Convertir le fichier en buffer
     console.log('🔄 Conversion du fichier en buffer...');
