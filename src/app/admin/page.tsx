@@ -8,6 +8,7 @@ import StrictAdminProtected from '../components/StrictAdminProtected';
 import { adminApiGet, adminApiPost, adminApiPut, adminApiDelete, adminApiReorderCategories } from '@/lib/adminApi';
 import ApiTest from '../components/ApiTest';
 import AdminImageDisplay from '@/components/ui/AdminImageDisplay';
+import ImageOptimizationInfo from '@/components/ui/ImageOptimizationInfo';
 
 import LocalImagesDisplay from '@/components/ui/LocalImagesDisplay';
 import { 
@@ -194,7 +195,25 @@ export default function AdminDashboard() {
   const handleFileSelection = (files: FileList | null) => {
     if (!files) return;
     
-    const newPendingImages: PendingImage[] = Array.from(files).map(file => ({
+    const maxSize = 35 * 1024 * 1024; // 35MB (limite Vercel)
+    const validFiles = Array.from(files).filter(file => {
+      const isValidSize = file.size <= maxSize;
+      if (!isValidSize) {
+        console.warn(`⚠️ Fichier trop volumineux ignoré: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
+      }
+      return isValidSize;
+    });
+    
+          if (validFiles.length === 0) {
+        alert('⚠️ Tous les fichiers sélectionnés dépassent la limite de 4MB autorisée par Vercel.');
+        return;
+      }
+      
+      if (validFiles.length < files.length) {
+        alert(`⚠️ ${files.length - validFiles.length} fichier(s) ignoré(s) car trop volumineux (>4MB).`);
+      }
+    
+    const newPendingImages: PendingImage[] = validFiles.map(file => ({
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       file,
       preview: URL.createObjectURL(file)
@@ -214,7 +233,7 @@ export default function AdminDashboard() {
     });
   };
 
-  // Upload en lot de toutes les images en attente
+  // Upload séquentiel de toutes les images en attente (pour éviter l'erreur 413)
   const uploadAllImages = async () => {
     if (pendingImages.length === 0) return;
     
@@ -223,58 +242,77 @@ export default function AdminDashboard() {
     setUploadProgress({ current: 0, total: pendingImages.length });
     
     try {
-      // 1. Créer FormData avec TOUTES les images
-      const formData = new FormData();
-      pendingImages.forEach(pendingImage => {
-        formData.append('images', pendingImage.file);
-      });
+      const uploadedImages: GitImage[] = [];
+      let successCount = 0;
+      let errorCount = 0;
       
-      // 2. Upload en lot vers Git via l'API
-      const response = await fetch('/api/admin/upload-multiple-to-git', {
-        method: 'POST',
-        body: formData
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        
-        if (result.success) {
-          // 3. Créer les objets images à partir de la réponse
-          const uploadedImages: GitImage[] = result.images.map((img: { 
-            imageId: string; 
-            fileName: string; 
-            gitPath: string; 
-            githubUrl: string; 
-          }) => ({
-            imageId: img.imageId,
-            fileName: img.fileName,
-            gitPath: img.gitPath,
-            githubUrl: img.githubUrl,
-            category: 'uploads',
-            uploadDate: new Date()
-          }));
+      // Uploader chaque fichier individuellement pour éviter l'erreur 413
+      for (let i = 0; i < pendingImages.length; i++) {
+        const pendingImage = pendingImages[i];
+        try {
+          console.log(`📁 Upload fichier ${i + 1}/${pendingImages.length}: ${pendingImage.file.name}`);
           
-          // 4. Mettre à jour l'état
-          setImages(prev => [...prev, ...uploadedImages]);
-          setUploadStatus('success');
-          setUploadProgress({ current: pendingImages.length, total: pendingImages.length });
+          // Upload individuel pour chaque fichier
+          const formData = new FormData();
+          formData.append('image', pendingImage.file);
           
-          console.log(`🎉 Upload en lot réussi: ${uploadedImages.length} images ajoutées`);
+          const response = await fetch('/api/admin/upload-to-git', {
+            method: 'POST',
+            body: formData,
+          });
           
-        } else {
-          setUploadStatus('error');
-          console.error('❌ Erreur upload en lot:', result.error);
+          if (response.ok) {
+            const result = await response.json();
+            
+            if (result.success) {
+              const uploadedImage: GitImage = {
+                imageId: result.imageId,
+                fileName: result.fileName,
+                gitPath: result.gitPath,
+                githubUrl: result.githubUrl,
+                category: 'uploads',
+                uploadDate: new Date()
+              };
+              
+              uploadedImages.push(uploadedImage);
+              successCount++;
+              console.log(`✅ Succès: ${pendingImage.file.name}`);
+            } else {
+              errorCount++;
+              console.error(`❌ Erreur: ${pendingImage.file.name}`, result.error);
+            }
+          } else {
+            errorCount++;
+            const errorData = await response.json().catch(() => ({}));
+            console.error(`❌ Erreur HTTP: ${pendingImage.file.name}`, errorData);
+          }
+          
+          // Mettre à jour le progrès
+          setUploadProgress({ current: i + 1, total: pendingImages.length });
+          
+        } catch (error) {
+          errorCount++;
+          console.error(`❌ Erreur upload ${pendingImage.file.name}:`, error);
         }
+      }
+      
+      // Mettre à jour l'état avec les images uploadées
+      if (uploadedImages.length > 0) {
+        setImages(prev => [...prev, ...uploadedImages]);
+        setUploadStatus('success');
+        console.log(`🎉 Upload séquentiel réussi: ${uploadedImages.length} images ajoutées`);
         
+        if (errorCount > 0) {
+          console.warn(`⚠️ ${errorCount} fichier(s) en erreur`);
+        }
       } else {
-        const errorData = await response.json().catch(() => ({}));
         setUploadStatus('error');
-        console.error('❌ Erreur HTTP upload en lot:', errorData);
+        console.error('❌ Aucune image n\'a pu être uploadée');
       }
       
     } catch (error) {
       setUploadStatus('error');
-      console.error('❌ Erreur générale upload en lot:', error);
+      console.error('❌ Erreur générale upload séquentiel:', error);
     } finally {
       setIsUploading(false);
       setUploadProgress({ current: 0, total: 0 });
@@ -2010,6 +2048,11 @@ export default function AdminDashboard() {
             📤 Ajouter des Images à Git
           </h3>
           
+          {/* Information sur l'optimisation automatique */}
+          <div className="mb-6 lg:mb-8">
+            <ImageOptimizationInfo />
+          </div>
+          
           {/* Zone d'upload multiple optimisée pour tactile */}
           <div className="border-3 border-dashed border-gray-300 rounded-2xl p-8 lg:p-10 text-center">
             <input
@@ -2037,6 +2080,23 @@ export default function AdminDashboard() {
             <p className="text-base lg:text-lg text-gray-500 mt-4 lg:mt-6">
               Vous pouvez sélectionner plusieurs images à la fois
             </p>
+            
+            {/* Information sur la limite Vercel */}
+            <div className="mt-4 lg:mt-6 p-4 lg:p-5 bg-green-50 border-2 border-green-200 rounded-xl">
+              <div className="flex items-start space-x-3">
+                <div className="w-6 h-6 lg:w-8 lg:h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm lg:text-base flex-shrink-0 mt-0.5">
+                  ✅
+                </div>
+                <div>
+                  <p className="text-sm lg:text-base text-green-800 font-medium">
+                    <strong>Redimensionnement automatique :</strong> Limite Vercel respectée automatiquement
+                  </p>
+                  <p className="text-xs lg:text-sm text-green-600 mt-1">
+                    Vos images sont automatiquement optimisées pour respecter la limite de 4.5 MB.
+                  </p>
+                </div>
+              </div>
+            </div>
             
             {/* Bouton d'upload en lot optimisé pour tactile */}
             {pendingImages.length > 0 && (

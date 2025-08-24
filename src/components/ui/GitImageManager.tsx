@@ -65,75 +65,82 @@ export default function GitImageManager() {
     setUploadProgress({ current: 0, total: pendingImages.length });
     
     try {
-      // 1. Créer FormData avec TOUTES les images
-      const formData = new FormData();
-      pendingImages.forEach(pendingImage => {
-        formData.append('images', pendingImage.file);
-      });
+      const uploadedImages: GitImage[] = [];
+      let successCount = 0;
+      let errorCount = 0;
       
-      // 2. Upload en lot vers Git via la nouvelle API optimisée
-      const response = await fetch('/api/admin/upload-multiple-to-git', {
-        method: 'POST',
-        body: formData
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        console.log('📥 Réponse API reçue:', result);
-        
-        if (result.success) {
-          // 3. Créer les objets images à partir de la réponse
-          const uploadedImages: GitImage[] = result.images.map((img: { 
-            imageId: string; 
-            fileName: string; 
-            gitPath: string; 
-            githubUrl: string; 
-          }) => ({
-            imageId: img.imageId,
-            fileName: img.fileName,
-            gitPath: img.gitPath,
-            githubUrl: img.githubUrl, // Utiliser l'URL individuelle de chaque image
-            category: 'uploads',
-            uploadDate: new Date()
-          }));
+      // Uploader chaque fichier individuellement pour éviter l'erreur 413
+      for (let i = 0; i < pendingImages.length; i++) {
+        const pendingImage = pendingImages[i];
+        try {
+          console.log(`📁 Upload fichier ${i + 1}/${pendingImages.length}: ${pendingImage.file.name}`);
           
-          console.log('🖼️ Images formatées:', uploadedImages);
+          // Upload individuel pour chaque fichier
+          const formData = new FormData();
+          formData.append('image', pendingImage.file);
           
-          // 4. Mettre à jour l'état
-          setImages(prev => {
-            const newImages = [...prev, ...uploadedImages];
-            console.log('📊 État images mis à jour:', newImages);
-            return newImages;
+          const response = await fetch('/api/admin/upload-to-git', {
+            method: 'POST',
+            body: formData,
           });
           
-          setUploadStatus('success');
-          setUploadProgress({ current: pendingImages.length, total: pendingImages.length });
-          
-          console.log(`🎉 Upload en lot réussi: ${uploadedImages.length} images ajoutées`);
-          console.log(`📊 Résumé: ${result.successCount} succès, ${result.errorCount} erreurs`);
-          
-          // Afficher les erreurs s'il y en a
-          if (result.errors && result.errors.length > 0) {
-            console.warn('⚠️ Erreurs partielles:', result.errors);
+          if (response.ok) {
+            const result = await response.json();
+            
+            if (result.success) {
+              const uploadedImage: GitImage = {
+                imageId: result.imageId,
+                fileName: result.fileName,
+                gitPath: result.gitPath,
+                githubUrl: result.githubUrl,
+                category: 'uploads',
+                uploadDate: new Date()
+              };
+              
+              uploadedImages.push(uploadedImage);
+              successCount++;
+              console.log(`✅ Succès: ${pendingImage.file.name}`);
+            } else {
+              errorCount++;
+              console.error(`❌ Erreur: ${pendingImage.file.name}`, result.error);
+            }
+          } else {
+            errorCount++;
+            const errorData = await response.json().catch(() => ({}));
+            console.error(`❌ Erreur HTTP: ${pendingImage.file.name}`, errorData);
           }
           
-        } else {
-          setUploadStatus('error');
-          console.error('❌ Erreur upload en lot:', result.error);
-          if (result.errors) {
-            console.error('📋 Détails des erreurs:', result.errors);
-          }
+          // Mettre à jour le progrès
+          setUploadProgress({ current: i + 1, total: pendingImages.length });
+          
+        } catch (error) {
+          errorCount++;
+          console.error(`❌ Erreur upload ${pendingImage.file.name}:`, error);
         }
+      }
+      
+      // Mettre à jour l'état avec les images uploadées
+      if (uploadedImages.length > 0) {
+        setImages(prev => {
+          const newImages = [...prev, ...uploadedImages];
+          console.log('📊 État images mis à jour:', newImages);
+          return newImages;
+        });
         
+        setUploadStatus('success');
+        console.log(`🎉 Upload séquentiel réussi: ${uploadedImages.length} images ajoutées`);
+        
+        if (errorCount > 0) {
+          console.warn(`⚠️ ${errorCount} fichier(s) en erreur`);
+        }
       } else {
-        const errorData = await response.json().catch(() => ({}));
         setUploadStatus('error');
-        console.error('❌ Erreur HTTP upload en lot:', errorData);
+        console.error('❌ Aucune image n\'a pu être uploadée');
       }
       
     } catch (error) {
       setUploadStatus('error');
-      console.error('❌ Erreur générale upload en lot:', error);
+      console.error('❌ Erreur générale upload séquentiel:', error);
     } finally {
       setIsUploading(false);
       setUploadProgress({ current: 0, total: 0 });

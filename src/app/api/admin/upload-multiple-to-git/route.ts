@@ -1,9 +1,98 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Octokit } from '@octokit/rest';
+import sharp from 'sharp';
+
+// Configuration pour désactiver le body parser par défaut
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
 const octokit = new Octokit({
   auth: process.env.GITHUB_ACCESS_TOKEN,
 });
+
+// Fonction de redimensionnement automatique
+async function resizeImageIfNeeded(buffer: Buffer, maxSizeBytes: number = 4.5 * 1024 * 1024): Promise<Buffer> {
+  try {
+    // Vérifier la taille actuelle
+    if (buffer.length <= maxSizeBytes) {
+      console.log(`✅ Image déjà dans la limite (${(buffer.length / 1024 / 1024).toFixed(2)} MB)`);
+      return buffer;
+    }
+
+    console.log(`🔄 Redimensionnement nécessaire: ${(buffer.length / 1024 / 1024).toFixed(2)} MB > ${(maxSizeBytes / 1024 / 1024).toFixed(2)} MB`);
+
+    // Analyser l'image
+    const image = sharp(buffer);
+    const metadata = await image.metadata();
+    
+    if (!metadata.width || !metadata.height) {
+      console.log('⚠️ Impossible de lire les métadonnées, retour de l\'image originale');
+      return buffer;
+    }
+
+    console.log(`📐 Dimensions originales: ${metadata.width}x${metadata.height}`);
+
+    // Calculer le ratio de réduction nécessaire
+    const currentSizeMB = buffer.length / 1024 / 1024;
+    const targetSizeMB = maxSizeBytes / 1024 / 1024;
+    const reductionRatio = Math.sqrt(targetSizeMB / currentSizeMB);
+    
+    // Appliquer une marge de sécurité (90% de la taille cible)
+    const safeReductionRatio = reductionRatio * 0.9;
+    
+    const newWidth = Math.round(metadata.width * safeReductionRatio);
+    const newHeight = Math.round(metadata.height * safeReductionRatio);
+
+    console.log(`🎯 Nouvelles dimensions: ${newWidth}x${newHeight} (ratio: ${safeReductionRatio.toFixed(3)})`);
+
+    // Redimensionner l'image avec une qualité optimisée
+    let resizedBuffer = await image
+      .resize(newWidth, newHeight, {
+        fit: 'inside',
+        withoutEnlargement: true
+      })
+      .jpeg({ 
+        quality: 85, // Qualité JPEG optimale
+        progressive: true 
+      })
+      .png({ 
+        quality: 85, // Qualité PNG optimale
+        progressive: true 
+      })
+      .webp({ 
+        quality: 85, // Qualité WebP optimale
+        effort: 4 // Niveau de compression
+      })
+      .toBuffer();
+
+    // Vérifier si le redimensionnement a suffi
+    if (resizedBuffer.length > maxSizeBytes) {
+      console.log(`⚠️ Premier redimensionnement insuffisant: ${(resizedBuffer.length / 1024 / 1024).toFixed(2)} MB`);
+      
+      // Réduire encore plus la qualité
+      resizedBuffer = await sharp(resizedBuffer)
+        .jpeg({ quality: 70 })
+        .png({ quality: 70 })
+        .webp({ quality: 70 })
+        .toBuffer();
+      
+      console.log(`🔄 Deuxième redimensionnement: ${(resizedBuffer.length / 1024 / 1024).toFixed(2)} MB`);
+    }
+
+    const finalSizeMB = resizedBuffer.length / 1024 / 1024;
+    console.log(`✅ Redimensionnement terminé: ${finalSizeMB.toFixed(2)} MB (réduction: ${((1 - finalSizeMB / currentSizeMB) * 100).toFixed(1)}%)`);
+
+    return resizedBuffer;
+
+  } catch (error) {
+    console.error('❌ Erreur lors du redimensionnement:', error);
+    console.log('⚠️ Retour de l\'image originale');
+    return buffer;
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,6 +105,12 @@ export async function POST(request: NextRequest) {
     console.log('- GITHUB_BRANCH:', process.env.GITHUB_BRANCH);
     console.log('- GITHUB_ACCESS_TOKEN:', process.env.GITHUB_ACCESS_TOKEN ? '✅ Présent' : '❌ Manquant');
     
+    if (!process.env.GITHUB_ACCESS_TOKEN || !process.env.GITHUB_OWNER || !process.env.GITHUB_REPO) {
+      return NextResponse.json({ 
+        error: 'Configuration GitHub manquante' 
+      }, { status: 500 });
+    }
+    
     const formData = await request.formData();
     const files = formData.getAll('images') as File[];
     
@@ -27,7 +122,11 @@ export async function POST(request: NextRequest) {
     }
     
     // 1. Valider tous les fichiers
-    const validFiles = files.filter(validateImageFile);
+    const validFiles = files.filter(file => {
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      return allowedTypes.includes(file.type);
+    });
+    
     console.log('✅ Fichiers valides:', validFiles.length);
     
     if (validFiles.length === 0) {
@@ -35,13 +134,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Aucun fichier valide' }, { status: 400 });
     }
     
-    // 2. Uploader chaque fichier individuellement mais en lot
+    // 2. Uploader chaque fichier individuellement avec redimensionnement
     const uploadedImages = [];
     const errors = [];
     
     for (const file of validFiles) {
       try {
-        console.log(`🔄 Upload en cours: ${file.name}`);
+        console.log(`🔄 Upload en cours: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
         
         const imageId = generateUniqueImageId();
         const fileName = `${imageId}-${file.name}`;
@@ -50,10 +149,16 @@ export async function POST(request: NextRequest) {
         console.log(`📝 ID généré: ${imageId}`);
         console.log(`📁 Chemin fichier: ${filePath}`);
         
-        // Convertir le fichier en base64
+        // Convertir le fichier en buffer
         const buffer = Buffer.from(await file.arrayBuffer());
-        const base64Content = buffer.toString('base64');
-        console.log(`📊 Taille base64: ${base64Content.length} caractères`);
+        
+        // Redimensionner automatiquement si nécessaire
+        const optimizedBuffer = await resizeImageIfNeeded(buffer);
+        
+        console.log(`📊 Taille finale: ${(optimizedBuffer.length / 1024 / 1024).toFixed(2)} MB`);
+        
+        // Convertir en base64
+        const base64Content = optimizedBuffer.toString('base64');
         
         // Uploader vers GitHub
         console.log('🌐 Appel API GitHub...');
@@ -72,9 +177,12 @@ export async function POST(request: NextRequest) {
           imageId,
           fileName,
           gitPath: `/images/uploads/${fileName}`,
-          size: file.size,
+          size: optimizedBuffer.length,
+          originalSize: file.size,
           type: file.type,
           githubUrl: response.data.content?.html_url,
+          sizeReduction: file.size > optimizedBuffer.length ? 
+            `${((1 - optimizedBuffer.length / file.size) * 100).toFixed(1)}%` : '0%'
         });
         
         console.log(`✅ Image uploadée: ${fileName}`);
@@ -137,24 +245,4 @@ function generateUniqueImageId(): string {
   const timestamp = now.toISOString().replace(/[-:]/g, '').slice(0, 15);
   const random = Math.random().toString(36).substring(2, 7);
   return `img-${timestamp}-${random}`;
-}
-
-function validateImageFile(file: File): boolean {
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-  const maxSize = 35 * 1024 * 1024; // 35MB
-  
-  console.log(`🔍 Validation du fichier: ${file.name}`);
-  console.log(`   - Type MIME: "${file.type}"`);
-  console.log(`   - Taille: ${file.size} bytes (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
-  console.log(`   - Types autorisés: ${allowedTypes.join(', ')}`);
-  console.log(`   - Taille max: ${maxSize} bytes (${(maxSize / 1024 / 1024).toFixed(2)} MB)`);
-  
-  const typeValid = allowedTypes.includes(file.type);
-  const sizeValid = file.size <= maxSize;
-  
-  console.log(`   - Type valide: ${typeValid ? '✅' : '❌'}`);
-  console.log(`   - Taille valide: ${sizeValid ? '✅' : '❌'}`);
-  console.log(`   - Résultat final: ${typeValid && sizeValid ? '✅ VALIDÉ' : '❌ REJETÉ'}`);
-  
-  return typeValid && sizeValid;
 }

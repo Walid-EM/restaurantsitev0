@@ -1,7 +1,17 @@
 {
   "functions": {
-    "app/api/admin/sync-images/route.ts": {
-      "maxDuration": 300
+    "src/app/api/admin/upload-multiple-to-git/route.ts": {
+      "maxDuration": 60
     }
-  }
+  },
+  "routes": [
+    {
+      "src": "/api/admin/upload-multiple-to-git",
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type"
+      }
+    }
+  ]
 }

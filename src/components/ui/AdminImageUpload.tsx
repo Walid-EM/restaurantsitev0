@@ -24,6 +24,18 @@ interface UploadedImage {
   uploadedAt: string;
 }
 
+interface UploadResult {
+  success: boolean;
+  imageId?: string;
+  fileName?: string;
+  gitPath?: string;
+  githubUrl?: string;
+  originalSize?: number;
+  optimizedSize?: number;
+  sizeReduction?: string;
+  error?: string;
+}
+
 export default function AdminImageUpload({
   currentImage,
   currentImageId,
