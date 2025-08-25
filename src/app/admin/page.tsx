@@ -12,7 +12,6 @@ import ImageOptimizationInfo from '@/components/ui/ImageOptimizationInfo';
 import SharpTest from '@/components/ui/SharpTest';
 import SharpSimpleTest from '@/components/ui/SharpSimpleTest';
 import ImageWorkflowManager from '@/components/ui/ImageWorkflowManager';
-import '@/components/ui/ImageWorkflowManager.css';
 
 import LocalImagesDisplay from '@/components/ui/LocalImagesDisplay';
 import { 
@@ -2187,27 +2186,7 @@ export default function AdminDashboard() {
 
         {/* Section 1: Ajouter des images et les envoyer sur Git */}
         <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 lg:p-8 border border-white/20">
-          <h3 className="text-2xl lg:text-3xl font-semibold text-white mb-6 lg:mb-8">
-            📤 Ajouter des Images à Git
-          </h3>
           
-          {/* Information sur l'optimisation automatique */}
-          <div className="mb-6 lg:mb-8">
-            <ImageOptimizationInfo />
-          </div>
-          
-          {/* Test de Sharp */}
-          <div className="mt-6 lg:mt-8">
-            <SharpTest />
-          </div>
-
-                          <div className="mt-6 lg:mt-8">
-                  <SharpSimpleTest />
-                </div>
-                
-                <div className="mt-6 lg:mt-8">
-                  <ImageWorkflowManager />
-                </div>
           
           {/* Zone d'upload multiple optimisée pour tactile */}
           <div className="border-3 border-dashed border-gray-300 rounded-2xl p-8 lg:p-10 text-center">
@@ -2237,23 +2216,6 @@ export default function AdminDashboard() {
               Vous pouvez sélectionner plusieurs images à la fois
             </p>
             
-            {/* Information sur la limite Vercel */}
-            <div className="mt-4 lg:mt-6 p-4 lg:p-5 bg-green-50 border-2 border-green-200 rounded-xl">
-              <div className="flex items-start space-x-3">
-                <div className="w-6 h-6 lg:w-8 lg:h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm lg:text-base flex-shrink-0 mt-0.5">
-                  ✅
-                </div>
-                <div>
-                  <p className="text-sm lg:text-base text-green-800 font-medium">
-                    <strong>Redimensionnement automatique :</strong> Limite Vercel respectée automatiquement
-                  </p>
-                  <p className="text-xs lg:text-sm text-green-600 mt-1">
-                    Vos images sont automatiquement optimisées pour respecter la limite de 4.5 MB.
-                  </p>
-                </div>
-              </div>
-            </div>
-            
             {/* Bouton d'upload en lot optimisé pour tactile */}
             {pendingImages.length > 0 && (
               <div className="mt-6 lg:mt-8">
@@ -2267,7 +2229,7 @@ export default function AdminDashboard() {
                   ) : (
                     <CheckCircle className="w-6 h-6 lg:w-8 lg:h-8 inline mr-3" />
                   )}
-                  {isUploading ? 'Upload en cours...' : `🚀 Ajouter ${pendingImages.length} image${pendingImages.length > 1 ? 's' : ''} à Git`}
+                  {isUploading ? 'Upload en cours...' : ` Ajouter ${pendingImages.length} image${pendingImages.length > 1 ? 's' : ''} à votre site`}
                 </button>
               </div>
             )}
@@ -2301,7 +2263,7 @@ export default function AdminDashboard() {
                   <div className="w-10 h-10 lg:w-12 lg:h-12 bg-green-500 rounded-full flex items-center justify-center text-white text-2xl">
                     ✅
                   </div>
-                  <span className="text-lg lg:text-xl font-medium">Images ajoutées au repository Git avec succès !</span>
+                  <span className="text-lg lg:text-xl font-medium">Images ajoutées a votre site avec succès !</span>
                 </div>
               </div>
             )}
@@ -2320,9 +2282,9 @@ export default function AdminDashboard() {
 
           {/* Images en attente optimisées pour tactile */}
           {pendingImages.length > 0 && (
-            <div className="mt-8 lg:mt-10 bg-yellow-50 border-2 border-yellow-200 rounded-2xl p-6 lg:p-8">
-              <h3 className="text-xl lg:text-2xl font-semibold text-yellow-800 mb-6">
-                📋 Images en attente d&apos;upload ({pendingImages.length})
+            <div className="mt-8 lg:mt-10 bg-white/10 border-2 border-white-200 rounded-2xl p-6 lg:p-8">
+              <h3 className="text-xl lg:text-2xl font-semibold text-white/90 mb-6">
+                 Images en attente d&apos;upload ({pendingImages.length})
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 lg:gap-6">
                 {pendingImages.map((pendingImage) => (
@@ -2346,15 +2308,6 @@ export default function AdminDashboard() {
               </div>
             </div>
           )}
-        </div>
-
-        {/* Section des images synchronisées localement */}
-        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 lg:p-8 border border-white/20">
-          <h3 className="text-xl lg:text-2xl font-semibold text-white mb-6 flex items-center">
-            <ImageIcon className="w-6 h-6 lg:w-8 lg:h-8 mr-3" />
-            Images Synchronisées Localement
-          </h3>
-          <LocalImagesDisplay />
         </div>
       </div>
     );
@@ -2870,38 +2823,6 @@ export default function AdminDashboard() {
           </p>
         </div>
 
-        {/* Statistiques rapides */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Produits</p>
-                <p className="text-2xl font-bold text-white">0</p>
-              </div>
-              <Package className="w-8 h-8 text-blue-400" />
-            </div>
-          </div>
-          
-          <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Catégories</p>
-                <p className="text-2xl font-bold text-white">0</p>
-              </div>
-              <Folder className="w-8 h-8 text-green-400" />
-            </div>
-          </div>
-          
-          <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Suppléments</p>
-                <p className="text-2xl font-bold text-white">0</p>
-              </div>
-              <Plus className="w-8 h-8 text-purple-400" />
-            </div>
-          </div>
-        </div>
 
         {/* Sections cliquables */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
