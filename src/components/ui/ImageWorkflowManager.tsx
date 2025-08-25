@@ -88,7 +88,7 @@ const UploadStats: React.FC<{ stats: UploadStats }> = ({ stats }) => (
   <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
     <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
       <CheckCircle className="w-5 h-5 text-green-400 mr-2" />
-      Statistiques d'Upload
+      Statistiques d&apos;Upload
     </h4>
     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
       <div className="text-center p-3 bg-white/5 rounded-lg">
@@ -374,7 +374,7 @@ export default function ImageWorkflowManager() {
           Gestion des Images
         </h2>
         <p className="text-gray-300 text-lg">
-          Workflow automatique pour l'upload et la compression d'images
+          Workflow automatique pour l&apos;upload et la compression d&apos;images
         </p>
       </div>
 
@@ -468,7 +468,7 @@ export default function ImageWorkflowManager() {
         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
           <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
             <RefreshCw className="w-5 h-5 text-blue-400 mr-2 animate-spin" />
-            Progression de l'Upload
+            Progression de l&apos;Upload
           </h4>
           <ProgressBar 
             progress={progress} 
