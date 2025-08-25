@@ -11,8 +11,8 @@ import AdminImageDisplay from '@/components/ui/AdminImageDisplay';
 import ImageOptimizationInfo from '@/components/ui/ImageOptimizationInfo';
 import SharpTest from '@/components/ui/SharpTest';
 import SharpSimpleTest from '@/components/ui/SharpSimpleTest';
-import ClientResizeTest from '@/components/ui/ClientResizeTest';
-import ImageUploadStats from '@/components/ui/ImageUploadStats';
+import ImageWorkflowManager from '@/components/ui/ImageWorkflowManager';
+import '@/components/ui/ImageWorkflowManager.css';
 
 import LocalImagesDisplay from '@/components/ui/LocalImagesDisplay';
 import { 
@@ -2206,7 +2206,7 @@ export default function AdminDashboard() {
                 </div>
                 
                 <div className="mt-6 lg:mt-8">
-                  <ClientResizeTest />
+                  <ImageWorkflowManager />
                 </div>
           
           {/* Zone d'upload multiple optimisée pour tactile */}
@@ -2290,7 +2290,7 @@ export default function AdminDashboard() {
             {/* Statistiques de redimensionnement */}
             {uploadStats.length > 0 && (
               <div className="mt-6 lg:mt-8">
-                <ImageUploadStats uploads={uploadStats} />
+                {/* Statistiques intégrées dans ImageWorkflowManager */}
               </div>
             )}
             
